@@ -1,4 +1,4 @@
-import '../../core/models/base_model.dart';
+import '../../core/models/BaseModel.dart';
 
 /// Modelo simples de usuario para cadastro/login local.
 class UserModel extends BaseModel {

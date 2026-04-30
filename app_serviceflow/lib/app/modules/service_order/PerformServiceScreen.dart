@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 
-import '../../core/mixins/ui_feedback_mixin.dart';
-import '../../core/theme/app_colors.dart';
-import '../../shared/custom_button.dart';
-import '../../shared/section_card.dart';
-import 'customer_model.dart';
-import 'service_order_controller.dart';
-import 'service_order_repository.dart';
+import '../../core/mixins/UiFeedbackMixin.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/CustomButton.dart';
+import '../../shared/SectionCard.dart';
+import 'CustomerModel.dart';
+import 'ServiceOrderController.dart';
+import 'ServiceOrderRepository.dart';
 
 /// Tela de atendimento realizado.
 /// O fluxo e baixo nivel mesmo: tirar foto, assinar e salvar.
@@ -33,11 +33,6 @@ class _PerformServiceScreenState extends State<PerformServiceScreen>
   @override
   void initState() {
     super.initState();
-    // Primeiro criamos o controller e guardamos na variavel.
-    // So depois disso adicionamos o listener da assinatura.
-    // Se tentarmos usar _controller durante a propria atribuicao,
-    // o Dart acusa LateInitializationError porque o campo ainda nao
-    // terminou de ser inicializado.
     _controller = ServiceOrderController(repository: widget.repository);
     _controller.signatureController.addListener(_controller.refresh);
   }
@@ -138,9 +133,10 @@ class _PerformServiceScreenState extends State<PerformServiceScreen>
                     ? 'Salvando...'
                     : 'Finalizar atendimento',
                 icon: Icons.check_circle_outline,
-                onPressed: _controller.canFinishRealized && !_controller.isSaving
-                    ? _save
-                    : null,
+                onPressed:
+                    _controller.canFinishRealized && !_controller.isSaving
+                        ? _save
+                        : null,
               ),
             ],
           ),
@@ -183,7 +179,8 @@ class _PerformServiceScreenState extends State<PerformServiceScreen>
                       CircleAvatar(
                         radius: 28,
                         backgroundColor: AppColors.primary,
-                        child: Icon(Icons.camera_alt_outlined, color: Colors.white),
+                        child: Icon(Icons.camera_alt_outlined,
+                            color: Colors.white),
                       ),
                       SizedBox(height: 12),
                       Text('Tirar / escolher foto'),

@@ -1,9 +1,6 @@
+import 'package:app_serviceflow/app/core/services/StorageService.dart';
 import 'package:dio/dio.dart';
 
-import 'storage_service.dart';
-
-/// Cliente HTTP centralizado.
-/// Hoje ele esta pronto para crescer, mas sem inventar fluxo remoto que o app ainda nao precisa.
 class DioClient {
   DioClient({required StorageService storageService})
       : instance = Dio(

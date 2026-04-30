@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-
-import 'auth_repository.dart';
-import 'user_model.dart';
+import 'package:app_serviceflow/app/modules/auth/AuthRepository.dart';
+import 'package:app_serviceflow/app/modules/auth/UserModel.dart';
+import 'package:flutter/foundation.dart';
 
 enum AuthMode { login, register }
 
-/// Controller da tela de login/cadastro.
 class AuthController extends ChangeNotifier {
-  AuthController({required AuthRepository repository}) : _repository = repository;
+  AuthController({required AuthRepository repository})
+      : _repository = repository;
 
   final AuthRepository _repository;
 

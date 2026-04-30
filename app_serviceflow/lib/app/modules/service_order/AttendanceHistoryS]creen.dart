@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../shared/section_card.dart';
-import 'attendance_details_modal.dart';
-import 'service_order_model.dart';
-import 'service_order_repository.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/SectionCard.dart';
+import 'AttendanceDetailsModal.dart';
+import 'ServiceOderModel.dart';
+import 'ServiceOrderRepository.dart';
 
 /// Lista os atendimentos do dia e abre o modal de detalhe.
 class AttendanceHistoryScreen extends StatefulWidget {
@@ -16,7 +16,8 @@ class AttendanceHistoryScreen extends StatefulWidget {
   final ServiceOrderRepository repository;
 
   @override
-  State<AttendanceHistoryScreen> createState() => _AttendanceHistoryScreenState();
+  State<AttendanceHistoryScreen> createState() =>
+      _AttendanceHistoryScreenState();
 }
 
 class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
@@ -37,7 +38,8 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         builder: (context, snapshot) {
           final orders = snapshot.data ?? [];
           final realizedCount = orders.where((item) => item.isRealized).length;
-          final justifiedCount = orders.where((item) => item.isJustified).length;
+          final justifiedCount =
+              orders.where((item) => item.isJustified).length;
 
           return ListView(
             padding: const EdgeInsets.all(16),

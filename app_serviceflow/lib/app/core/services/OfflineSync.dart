@@ -1,4 +1,4 @@
-import 'storage_service.dart';
+import 'StorageService.dart';
 
 /// Fila offline simplificada.
 /// Neste momento ela so marca que existe algo para sincronizar no futuro.
@@ -10,7 +10,8 @@ class OfflineSync {
   static const _syncQueueKey = 'sync_queue_size';
 
   Future<void> enqueue() async {
-    final currentSize = int.tryParse(storageService.getString(_syncQueueKey) ?? '0') ?? 0;
+    final currentSize =
+        int.tryParse(storageService.getString(_syncQueueKey) ?? '0') ?? 0;
     await storageService.setString(_syncQueueKey, '${currentSize + 1}');
   }
 }

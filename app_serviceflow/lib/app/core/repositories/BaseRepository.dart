@@ -1,10 +1,8 @@
 import 'dart:convert';
 
-import '../models/base_model.dart';
-import '../services/storage_service.dart';
+import 'package:app_serviceflow/app/core/models/baseModel.dart';
+import 'package:app_serviceflow/app/core/services/StorageService.dart';
 
-/// Repositorio base para CRUD local em cima do storage.
-/// Nao e um banco de verdade ainda, mas a assinatura ja deixa a troca futura mais tranquila.
 abstract class BaseRepository<T extends BaseModel> {
   BaseRepository({required StorageService storageService})
       : _storageService = storageService;

@@ -1,4 +1,4 @@
-import '../../core/models/base_model.dart';
+import '../../core/models/BaseModel.dart';
 
 /// Cliente mockado do dia.
 /// Como a necessidade atual e listagem fixa, manter assim deixa o fluxo bem direto.

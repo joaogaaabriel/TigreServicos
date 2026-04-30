@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
+import 'AppColors.dart';
 
 /// Tema bem simples: foco em legibilidade e contraste, nao em enfeite.
 class AppTheme {

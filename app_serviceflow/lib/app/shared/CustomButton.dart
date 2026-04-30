@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_colors.dart';
+import '../core/theme/AppColors.dart';
 
 /// Botao padrao do projeto para evitar estilo espalhado.
 class CustomButton extends StatelessWidget {

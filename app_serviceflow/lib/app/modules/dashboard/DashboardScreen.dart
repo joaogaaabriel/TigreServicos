@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../shared/section_card.dart';
-import '../auth/user_model.dart';
-import '../service_order/attendance_history_screen.dart';
-import '../service_order/customer_model.dart';
-import '../service_order/justify_visit_screen.dart';
-import '../service_order/perform_service_screen.dart';
-import '../service_order/service_order_repository.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/SectionCard.dart';
+import '../auth/UserModel.dart';
+import '../service_order/AttendanceHistoryScreen.dart';
+import '../service_order/CustomerModel.dart';
+import '../service_order/JustifyVisitScreen.dart';
+import '../service_order/PerformServiceScreen.dart';
+import '../service_order/ServiceOrderRepository.dart';
 
 /// Dashboard principal com a lista de clientes do dia.
 class DashboardScreen extends StatefulWidget {

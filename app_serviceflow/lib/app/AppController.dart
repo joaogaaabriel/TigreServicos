@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'modules/auth/auth_repository.dart';
-import 'modules/auth/user_model.dart';
+import 'modules/auth/AuthRepository.dart';
+import 'modules/auth/UserModel.dart';
 
 enum AppStatus { splash, unauthenticated, authenticated }
 

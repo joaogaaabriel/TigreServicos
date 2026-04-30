@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../core/mixins/ui_feedback_mixin.dart';
-import '../../core/mixins/validator_mixin.dart';
-import '../../core/theme/app_colors.dart';
-import '../../shared/custom_button.dart';
-import '../../shared/custom_text_field.dart';
-import '../../shared/section_card.dart';
-import 'auth_controller.dart';
-import 'auth_repository.dart';
-import 'user_model.dart';
+import '../../core/mixins/UiFeedbackMixin.dart';
+import '../../core/mixins/ValidatorMixin.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/CustomButton.dart';
+import '../../shared/CustomTextField.dart';
+import '../../shared/SectionCard.dart';
+import 'AuthController.dart';
+import 'AuthRepository.dart';
+import 'UserModel.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({

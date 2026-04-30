@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/mixins/ui_feedback_mixin.dart';
-import '../../core/mixins/validator_mixin.dart';
-import '../../core/theme/app_colors.dart';
-import '../../shared/custom_button.dart';
-import '../../shared/custom_text_field.dart';
-import 'customer_model.dart';
-import 'service_order_controller.dart';
-import 'service_order_repository.dart';
+import '../../core/mixins/UiFeedbackMixin.dart';
+import '../../core/mixins/ValidatorMixin.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/CustomButton.dart';
+import '../../shared/CustomTextField.dart';
+import 'CustomerModel.dart';
+import 'ServiceOrderController.dart';
+import 'ServiceOrderRepository.dart';
 
 /// Tela para justificar visita nao realizada.
 class JustifyVisitScreen extends StatefulWidget {

@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../shared/section_card.dart';
-import 'service_order_model.dart';
+import '../../core/theme/AppColors.dart';
+import '../../shared/SectionCard.dart';
+import 'ServiceOderModel.dart';
 
 /// Modal de detalhes do atendimento salvo.
 class AttendanceDetailsModal extends StatelessWidget {
@@ -114,7 +114,8 @@ class AttendanceDetailsModal extends StatelessWidget {
                 height: 180,
                 color: AppColors.primarySoft,
                 alignment: Alignment.center,
-                child: const Text('Nao foi possivel renderizar a imagem salva.'),
+                child:
+                    const Text('Nao foi possivel renderizar a imagem salva.'),
               );
             },
           ),

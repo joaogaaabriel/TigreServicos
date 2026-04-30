@@ -1,28 +1,65 @@
-import '../../core/repositories/base_repository.dart';
-import '../../core/services/database_helper.dart';
-import '../../core/services/offline_sync.dart';
-import '../../core/services/storage_service.dart';
-import 'customer_model.dart';
-import 'service_order_model.dart';
+import 'dart:convert';
 
-/// Repositorio central das ordens de servico.
-/// Ele entrega os clientes mockados e salva o historico local do dia.
-class ServiceOrderRepository extends BaseRepository<ServiceOrderModel> {
+import 'package:app_serviceflow/app/core/services/StorageService.dart';
+import 'package:app_serviceflow/app/core/services/DatabaseHelper.dart';
+import 'package:app_serviceflow/app/core/services/OfflineSync.dart';
+import 'package:app_serviceflow/app/modules/service_order/ServiceOderModel.dart';
+import 'package:app_serviceflow/app/modules/service_order/CustomerModel.dart';
+
+class ServiceOrderRepository {
   ServiceOrderRepository({
     required StorageService storageService,
-    required this.databaseHelper,
-    required this.offlineSync,
-  }) : super(storageService: storageService);
+    required DatabaseHelper databaseHelper,
+    required OfflineSync offlineSync,
+  })  : _storageService = storageService,
+        _offlineSync = offlineSync;
 
-  final DatabaseHelper databaseHelper;
-  final OfflineSync offlineSync;
+  final StorageService _storageService;
+  final OfflineSync _offlineSync;
 
-  @override
-  String get storageKey => 'service_orders';
+  static const _storageKey = 'service_orders';
 
-  @override
-  ServiceOrderModel fromMap(Map<String, dynamic> map) {
-    return ServiceOrderModel.fromMap(map);
+  Future<List<ServiceOrderModel>> getAll() async {
+    final jsonString = _storageService.getString(_storageKey);
+    if (jsonString == null || jsonString.isEmpty) {
+      return [];
+    }
+
+    final list = (jsonDecode(jsonString) as List<dynamic>)
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+
+    return list.map((map) => ServiceOrderModel.fromMap(map)).toList();
+  }
+
+  Future<void> saveAll(List<ServiceOrderModel> items) async {
+    final encoded = jsonEncode(items.map((item) => item.toMap()).toList());
+    await _storageService.setString(_storageKey, encoded);
+  }
+
+  Future<void> insert(ServiceOrderModel item) async {
+    final items = await getAll();
+    items.add(item);
+    await saveAll(items);
+  }
+
+  Future<void> update(ServiceOrderModel item) async {
+    final items = await getAll();
+    final index = items.indexWhere((current) => current.id == item.id);
+
+    if (index == -1) {
+      items.add(item);
+    } else {
+      items[index] = item;
+    }
+
+    await saveAll(items);
+  }
+
+  Future<void> delete(String id) async {
+    final items = await getAll();
+    items.removeWhere((item) => item.id == id);
+    await saveAll(items);
   }
 
   List<CustomerModel> getMockedCustomers() {
@@ -93,7 +130,7 @@ class ServiceOrderRepository extends BaseRepository<ServiceOrderModel> {
       ),
     );
 
-    await offlineSync.enqueue();
+    await _offlineSync.enqueue();
   }
 
   Future<void> saveJustifiedOrder({
@@ -113,6 +150,6 @@ class ServiceOrderRepository extends BaseRepository<ServiceOrderModel> {
       ),
     );
 
-    await offlineSync.enqueue();
+    await _offlineSync.enqueue();
   }
 }

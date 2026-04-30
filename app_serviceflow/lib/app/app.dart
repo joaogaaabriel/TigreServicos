@@ -1,12 +1,9 @@
+import 'package:app_serviceflow/app/AppController.dart';
+import 'package:app_serviceflow/app/AppDependencies.dart';
+import 'package:app_serviceflow/app/AppView.dart';
+import 'package:app_serviceflow/app/core/theme/AppTheme.dart';
 import 'package:flutter/material.dart';
 
-import 'app_controller.dart';
-import 'app_dependencies.dart';
-import 'app_view.dart';
-import 'core/theme/app_theme.dart';
-
-/// Esse arquivo segura a casca principal do app.
-/// A regra geral e: MaterialApp aqui, telas e fluxos nos modulos.
 class TigreServicosApp extends StatefulWidget {
   const TigreServicosApp({super.key, required this.dependencies});
 

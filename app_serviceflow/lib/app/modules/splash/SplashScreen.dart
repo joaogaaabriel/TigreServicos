@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/AppColors.dart';
 
 /// Splash curta, so para dar identidade ao app na abertura.
 class SplashScreen extends StatefulWidget {

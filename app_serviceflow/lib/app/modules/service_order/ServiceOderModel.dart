@@ -1,4 +1,4 @@
-import '../../core/models/base_model.dart';
+import '../../core/models/BaseModel.dart';
 
 enum ServiceOrderStatus { realized, justified }
 
@@ -34,7 +34,9 @@ class ServiceOrderModel extends BaseModel {
   factory ServiceOrderModel.fromMap(Map<String, dynamic> map) {
     return ServiceOrderModel(
       id: map['id'] as String,
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? ''),
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
       customerId: map['customerId'] as String? ?? '',
       customerName: map['customerName'] as String? ?? '',
       serviceName: map['serviceName'] as String? ?? '',

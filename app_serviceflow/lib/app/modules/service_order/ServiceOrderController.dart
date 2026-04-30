@@ -5,11 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 
-import 'package:image_picker/image_picker.dart';
-import 'package:signature/signature.dart';
-
-import 'customer_model.dart';
-import 'service_order_repository.dart';
+import 'CustomerModel.dart';
+import 'ServiceOrderRepository.dart';
 
 /// Controller das telas de atendimento e consulta.
 class ServiceOrderController extends ChangeNotifier {
@@ -39,12 +36,14 @@ class ServiceOrderController extends ChangeNotifier {
   }
 
   Future<void> pickEntryPhoto() async {
-    _entryPhotoBase64 = await _pickImageAsBase64(ImageSource.camera) ?? _entryPhotoBase64;
+    _entryPhotoBase64 =
+        await _pickImageAsBase64(ImageSource.camera) ?? _entryPhotoBase64;
     notifyListeners();
   }
 
   Future<void> pickExitPhoto() async {
-    _exitPhotoBase64 = await _pickImageAsBase64(ImageSource.camera) ?? _exitPhotoBase64;
+    _exitPhotoBase64 =
+        await _pickImageAsBase64(ImageSource.camera) ?? _exitPhotoBase64;
     notifyListeners();
   }
 

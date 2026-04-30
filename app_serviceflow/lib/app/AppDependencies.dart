@@ -1,12 +1,12 @@
-import 'core/services/database_helper.dart';
-import 'core/services/dio_client.dart';
-import 'core/services/offline_sync.dart';
-import 'core/services/storage_service.dart';
-import 'modules/auth/auth_repository.dart';
-import 'modules/service_order/service_order_repository.dart';
+import 'package:app_serviceflow/app/core/services/UserLocalDataSource.dart';
 
-/// Aqui fica a "caixa de ferramentas" do app.
-/// Em projeto pequeno isso resolve a injecao sem colocar pacote extra.
+import 'core/services/DatabaseHelper.dart';
+import 'core/services/DioClient.dart';
+import 'core/services/OfflineSync.dart';
+import 'core/services/StorageService.dart';
+import 'modules/auth/AuthRepository.dart';
+import 'modules/service_order/ServiceOrderRepository.dart';
+
 class AppDependencies {
   AppDependencies._({
     required this.storageService,
@@ -28,7 +28,7 @@ class AppDependencies {
     final storageService = StorageService();
     await storageService.init();
 
-    final databaseHelper = DatabaseHelper(storageService: storageService);
+    final databaseHelper = DatabaseHelper.instance;
     final dioClient = DioClient(storageService: storageService);
     final offlineSync = OfflineSync(storageService: storageService);
 
@@ -39,7 +39,7 @@ class AppDependencies {
       offlineSync: offlineSync,
       authRepository: AuthRepository(
         storageService: storageService,
-        databaseHelper: databaseHelper,
+        userLocalDataSource: UserLocalDataSource(),
       ),
       serviceOrderRepository: ServiceOrderRepository(
         storageService: storageService,

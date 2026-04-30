@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'app_controller.dart';
-import 'app_dependencies.dart';
-import 'modules/auth/auth_screen.dart';
-import 'modules/dashboard/dashboard_screen.dart';
-import 'modules/splash/splash_screen.dart';
+import 'AppController.dart';
+import 'AppDependencies.dart';
+import 'modules/auth/AuthScreen.dart';
+import 'modules/dashboard/DashboardScreen.dart';
+import 'modules/splash/SplashScreen.dart';
 
-/// Esse arquivo so decide qual modulo aparece.
-/// A navegacao interna continua simples, usando push normal.
 class AppView extends StatelessWidget {
   const AppView({
     super.key,
