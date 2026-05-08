@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Paleta principal em laranja, como foi pedido no escopo.
+/// Paleta principal em laranja.
 class AppColors {
   static const primary = Color(0xFFFF7A1A);
   static const primaryDark = Color(0xFFE56407);
