@@ -14,6 +14,7 @@ class SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero, // remove a margem padrão de 4px do Card
       child: Padding(
         padding: padding,
         child: child,

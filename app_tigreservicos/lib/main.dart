@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'app/App.dart';
-import 'app/AppDependencies.dart';
+import 'tigreservicos/appTigreServico.dart';
+import 'tigreservicos/AppDependencies.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

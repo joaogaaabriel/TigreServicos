@@ -5,7 +5,6 @@ import 'modules/auth/UserModel.dart';
 
 enum AppStatus { splash, unauthenticated, authenticated }
 
-/// Controller bem direto para decidir "qual tela raiz aparece agora".
 class AppController extends ChangeNotifier {
   AppController({required AuthRepository authRepository})
       : _authRepository = authRepository;
@@ -19,28 +18,33 @@ class AppController extends ChangeNotifier {
   UserModel? get currentUser => _currentUser;
 
   Future<void> bootstrap() async {
-    final results = await Future.wait<dynamic>([
-      _authRepository.getLoggedUser(),
-      Future<void>.delayed(const Duration(seconds: 2)),
-    ]);
-
-    _currentUser = results.first as UserModel?;
-    _status = _currentUser == null
-        ? AppStatus.unauthenticated
-        : AppStatus.authenticated;
+    // Sempre limpa a sessão ao abrir — exige login toda vez
+    await _authRepository.logout();
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    _status = AppStatus.unauthenticated;
     notifyListeners();
   }
 
-  Future<void> onAuthenticated(UserModel user) async {
+  Future<void> onLoginSuccess(UserModel user) async {
     _currentUser = user;
     _status = AppStatus.authenticated;
     notifyListeners();
   }
 
+  Future<void> onRegisterSuccess() async {
+    _status = AppStatus.unauthenticated;
+    notifyListeners();
+  }
+
   Future<void> logout() async {
+    final confirmed = await _shouldLogout();
+    if (!confirmed) return;
     await _authRepository.logout();
     _currentUser = null;
     _status = AppStatus.unauthenticated;
     notifyListeners();
   }
+
+  // Guarda o context globalmente para o dialog de confirmação
+  Future<bool> _shouldLogout() async => true; // confirmação feita na UI
 }

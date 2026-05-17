@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:app_serviceflow/app/core/services/StorageService.dart';
-import 'package:app_serviceflow/app/core/services/DatabaseHelper.dart';
-import 'package:app_serviceflow/app/core/services/OfflineSync.dart';
-import 'package:app_serviceflow/app/modules/service_order/ServiceOderModel.dart';
-import 'package:app_serviceflow/app/modules/service_order/CustomerModel.dart';
+import '../../core/services/StorageService.dart';
+import '../../core/services/DatabaseHelper.dart';
+import '../../core/services/OfflineSync.dart';
+import 'ServiceOderModel.dart';
+import 'CustomerModel.dart';
 
 class ServiceOrderRepository {
   ServiceOrderRepository({

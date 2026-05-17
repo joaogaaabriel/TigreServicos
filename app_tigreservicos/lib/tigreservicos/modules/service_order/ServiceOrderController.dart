@@ -8,7 +8,6 @@ import 'package:signature/signature.dart';
 import 'CustomerModel.dart';
 import 'ServiceOrderRepository.dart';
 
-/// Controller das telas de atendimento e consulta.
 class ServiceOrderController extends ChangeNotifier {
   ServiceOrderController({required ServiceOrderRepository repository})
       : _repository = repository;
@@ -29,23 +28,11 @@ class ServiceOrderController extends ChangeNotifier {
   String? get exitPhotoBase64 => _exitPhotoBase64;
   bool get isSaving => _isSaving;
 
-  bool get canFinishRealized {
-    return _entryPhotoBase64 != null &&
-        _exitPhotoBase64 != null &&
-        !signatureController.isEmpty;
-  }
-
-  Future<void> pickEntryPhoto() async {
-    _entryPhotoBase64 =
-        await _pickImageAsBase64(ImageSource.camera) ?? _entryPhotoBase64;
-    notifyListeners();
-  }
-
-  Future<void> pickExitPhoto() async {
-    _exitPhotoBase64 =
-        await _pickImageAsBase64(ImageSource.camera) ?? _exitPhotoBase64;
-    notifyListeners();
-  }
+  // Lê direto do signatureController na hora — sem listener
+  bool get canFinishRealized =>
+      _entryPhotoBase64 != null &&
+      _exitPhotoBase64 != null &&
+      !signatureController.isEmpty;
 
   Future<void> pickEntryPhotoFrom(ImageSource source) async {
     _entryPhotoBase64 = await _pickImageAsBase64(source) ?? _entryPhotoBase64;
@@ -59,10 +46,6 @@ class ServiceOrderController extends ChangeNotifier {
 
   void clearSignature() {
     signatureController.clear();
-    notifyListeners();
-  }
-
-  void refresh() {
     notifyListeners();
   }
 
@@ -113,21 +96,14 @@ class ServiceOrderController extends ChangeNotifier {
       source: source,
       imageQuality: 60,
     );
-
-    if (file == null) {
-      return null;
-    }
-
+    if (file == null) return null;
     final bytes = await file.readAsBytes();
     return base64Encode(bytes);
   }
 
   Future<String?> _signatureToBase64() async {
     final pngBytes = await signatureController.toPngBytes();
-    if (pngBytes == null) {
-      return null;
-    }
-
+    if (pngBytes == null) return null;
     return base64Encode(pngBytes);
   }
 

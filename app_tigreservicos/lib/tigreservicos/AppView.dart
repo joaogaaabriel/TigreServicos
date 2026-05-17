@@ -24,7 +24,8 @@ class AppView extends StatelessWidget {
       case AppStatus.unauthenticated:
         return AuthScreen(
           authRepository: dependencies.authRepository,
-          onAuthenticated: controller.onAuthenticated,
+          onLoginSuccess: controller.onLoginSuccess,
+          onRegisterSuccess: controller.onRegisterSuccess,
         );
       case AppStatus.authenticated:
         return DashboardScreen(

@@ -6,7 +6,6 @@ import 'AttendanceDetailsModal.dart';
 import 'ServiceOderModel.dart';
 import 'ServiceOrderRepository.dart';
 
-/// Lista os atendimentos do dia e abre o modal de detalhe.
 class AttendanceHistoryScreen extends StatefulWidget {
   const AttendanceHistoryScreen({
     super.key,
@@ -22,6 +21,7 @@ class AttendanceHistoryScreen extends StatefulWidget {
 
 class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   late Future<List<ServiceOrderModel>> _ordersFuture;
+  String _filter = 'todos';
 
   @override
   void initState() {
@@ -29,48 +29,88 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     _ordersFuture = widget.repository.getTodayOrders();
   }
 
+  List<ServiceOrderModel> _applyFilter(List<ServiceOrderModel> orders) {
+    if (_filter == 'realizado')
+      return orders.where((o) => o.isRealized).toList();
+    if (_filter == 'justificado')
+      return orders.where((o) => o.isJustified).toList();
+    return orders;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Atendimentos do dia')),
       body: FutureBuilder<List<ServiceOrderModel>>(
         future: _ordersFuture,
         builder: (context, snapshot) {
-          final orders = snapshot.data ?? [];
-          final realizedCount = orders.where((item) => item.isRealized).length;
-          final justifiedCount =
-              orders.where((item) => item.isJustified).length;
+          final allOrders = snapshot.data ?? [];
+          final filtered = _applyFilter(allOrders);
+          final realizedCount = allOrders.where((o) => o.isRealized).length;
+          final justifiedCount = allOrders.where((o) => o.isJustified).length;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildCounterCard(
-                      label: 'REALIZADOS',
-                      value: realizedCount,
-                      color: AppColors.success,
-                      icon: Icons.check_circle_outline,
+              // Um único card com divisor — sem risco de overflow
+              SectionCard(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildCounter(
+                        label: 'REALIZADOS',
+                        value: realizedCount,
+                        color: AppColors.success,
+                        icon: Icons.check_circle_outline,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildCounterCard(
-                      label: 'JUSTIFICADOS',
-                      value: justifiedCount,
-                      color: AppColors.warning,
-                      icon: Icons.assignment_late_outlined,
+                    Container(
+                      width: 1,
+                      height: 56,
+                      color: Colors.black12,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              if (orders.isEmpty)
-                const SectionCard(
-                  child: Text('Nenhum atendimento salvo hoje ainda.'),
+                    Expanded(
+                      child: _buildCounter(
+                        label: 'JUSTIFICADOS',
+                        value: justifiedCount,
+                        color: AppColors.warning,
+                        icon: Icons.assignment_late_outlined,
+                      ),
+                    ),
+                  ],
                 ),
-              ...orders.map(_buildOrderCard),
+              ),
+              const SizedBox(height: 16),
+
+              // Filtros
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip('Todos', 'todos'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Realizados', 'realizado'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Justificados', 'justificado'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (filtered.isEmpty)
+                const SectionCard(
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      'Nenhum atendimento encontrado.',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  ),
+                ),
+              ...filtered.map(_buildOrderCard),
             ],
           );
         },
@@ -78,43 +118,62 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     );
   }
 
-  Widget _buildCounterCard({
+  Widget _buildFilterChip(String label, String value) {
+    final selected = _filter == value;
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => setState(() => _filter = value),
+      selectedColor: AppColors.primarySoft,
+      checkmarkColor: AppColors.primaryDark,
+      labelStyle: TextStyle(
+        color: selected ? AppColors.primaryDark : Colors.black54,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+      ),
+    );
+  }
+
+  // Contador simples — ícone em cima, label, número
+  Widget _buildCounter({
     required String label,
     required int value,
     required Color color,
     required IconData icon,
   }) {
-    return SectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(height: 8),
-          Text(
-            '$value',
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$value',
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildOrderCard(ServiceOrderModel order) {
-    final badgeColor = order.isRealized ? AppColors.success : AppColors.warning;
-    final badgeText = order.isRealized ? 'REALIZADO' : 'JUSTIFICADO';
+    final isRealized = order.isRealized;
+    final badgeColor = isRealized ? AppColors.success : AppColors.warning;
+    final badgeText = isRealized ? 'REALIZADO' : 'JUSTIFICADO';
+    final badgeIcon = isRealized
+        ? Icons.check_circle_outline
+        : Icons.assignment_late_outlined;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -132,13 +191,8 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: AppColors.primarySoft,
-                child: Icon(
-                  order.isRealized
-                      ? Icons.check_circle_outline
-                      : Icons.assignment_late_outlined,
-                  color: badgeColor,
-                ),
+                backgroundColor: badgeColor.withOpacity(0.15),
+                child: Icon(badgeIcon, color: badgeColor),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -152,7 +206,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -167,6 +221,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         style: TextStyle(
                           color: badgeColor,
                           fontWeight: FontWeight.w700,
+                          fontSize: 12,
                         ),
                       ),
                     ),

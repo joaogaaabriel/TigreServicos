@@ -1,8 +1,9 @@
-import 'package:app_serviceflow/app/AppController.dart';
-import 'package:app_serviceflow/app/AppDependencies.dart';
-import 'package:app_serviceflow/app/AppView.dart';
-import 'package:app_serviceflow/app/core/theme/AppTheme.dart';
 import 'package:flutter/material.dart';
+
+import 'AppController.dart';
+import 'AppDependencies.dart';
+import 'AppView.dart';
+import 'core/theme/AppTheme.dart';
 
 class TigreServicosApp extends StatefulWidget {
   const TigreServicosApp({super.key, required this.dependencies});
