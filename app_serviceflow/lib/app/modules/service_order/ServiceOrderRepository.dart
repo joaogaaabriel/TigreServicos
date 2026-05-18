@@ -1,69 +1,71 @@
-import 'dart:convert';
-
-import 'package:app_serviceflow/app/core/services/StorageService.dart';
 import 'package:app_serviceflow/app/core/services/DatabaseHelper.dart';
 import 'package:app_serviceflow/app/core/services/OfflineSync.dart';
-import 'package:app_serviceflow/app/modules/service_order/ServiceOderModel.dart';
 import 'package:app_serviceflow/app/modules/service_order/CustomerModel.dart';
+import 'package:app_serviceflow/app/modules/service_order/ServiceOderModel.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ServiceOrderRepository {
   ServiceOrderRepository({
-    required StorageService storageService,
     required DatabaseHelper databaseHelper,
     required OfflineSync offlineSync,
-  })  : _storageService = storageService,
+  })  : _databaseHelper = databaseHelper,
         _offlineSync = offlineSync;
 
-  final StorageService _storageService;
+  final DatabaseHelper _databaseHelper;
   final OfflineSync _offlineSync;
 
-  static const _storageKey = 'service_orders';
-
   Future<List<ServiceOrderModel>> getAll() async {
-    final jsonString = _storageService.getString(_storageKey);
-    if (jsonString == null || jsonString.isEmpty) {
-      return [];
-    }
+    final db = await _databaseHelper.database;
 
-    final list = (jsonDecode(jsonString) as List<dynamic>)
-        .map((item) => Map<String, dynamic>.from(item as Map))
+    final result = await db.query(
+      'service_orders',
+      orderBy: 'createdAt DESC',
+    );
+
+    return result
+        .map((map) => ServiceOrderModel.fromMap(map))
         .toList();
-
-    return list.map((map) => ServiceOrderModel.fromMap(map)).toList();
-  }
-
-  Future<void> saveAll(List<ServiceOrderModel> items) async {
-    final encoded = jsonEncode(items.map((item) => item.toMap()).toList());
-    await _storageService.setString(_storageKey, encoded);
   }
 
   Future<void> insert(ServiceOrderModel item) async {
-    final items = await getAll();
-    items.add(item);
-    await saveAll(items);
+    final db = await _databaseHelper.database;
+
+    print('SALVANDO ORDEM...');
+    print(item.toMap());
+
+    await db.insert(
+      'service_orders',
+      item.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    print('ORDEM SALVA!');
   }
 
   Future<void> update(ServiceOrderModel item) async {
-    final items = await getAll();
-    final index = items.indexWhere((current) => current.id == item.id);
+    final db = await _databaseHelper.database;
 
-    if (index == -1) {
-      items.add(item);
-    } else {
-      items[index] = item;
-    }
-
-    await saveAll(items);
+    await db.update(
+      'service_orders',
+      item.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
   }
 
   Future<void> delete(String id) async {
-    final items = await getAll();
-    items.removeWhere((item) => item.id == id);
-    await saveAll(items);
+    final db = await _databaseHelper.database;
+
+    await db.delete(
+      'service_orders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   List<CustomerModel> getMockedCustomers() {
     final now = DateTime.now();
+
     return [
       CustomerModel(
         id: 'c1',
@@ -94,6 +96,7 @@ class ServiceOrderRepository {
 
   Future<List<ServiceOrderModel>> getTodayOrders() async {
     final allOrders = await getAll();
+
     final now = DateTime.now();
 
     return allOrders.where((order) {
@@ -106,7 +109,10 @@ class ServiceOrderRepository {
 
   Future<bool> hasAttendanceToday(String customerId) async {
     final todayOrders = await getTodayOrders();
-    return todayOrders.any((order) => order.customerId == customerId);
+
+    return todayOrders.any(
+          (order) => order.customerId == customerId,
+    );
   }
 
   Future<void> saveRealizedOrder({
@@ -115,20 +121,20 @@ class ServiceOrderRepository {
     required String exitPhotoBase64,
     required String signatureBase64,
   }) async {
-    await insert(
-      ServiceOrderModel(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        createdAt: DateTime.now(),
-        customerId: customer.id ?? '',
-        customerName: customer.name,
-        serviceName: customer.serviceName,
-        status: ServiceOrderStatus.realized,
-        date: DateTime.now(),
-        entryPhotoBase64: entryPhotoBase64,
-        exitPhotoBase64: exitPhotoBase64,
-        signatureBase64: signatureBase64,
-      ),
+    final order = ServiceOrderModel(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      createdAt: DateTime.now(),
+      customerId: customer.id ?? '',
+      customerName: customer.name,
+      serviceName: customer.serviceName,
+      status: ServiceOrderStatus.realized,
+      date: DateTime.now(),
+      entryPhotoBase64: entryPhotoBase64,
+      exitPhotoBase64: exitPhotoBase64,
+      signatureBase64: signatureBase64,
     );
+
+    await insert(order);
 
     await _offlineSync.enqueue();
   }
@@ -137,18 +143,18 @@ class ServiceOrderRepository {
     required CustomerModel customer,
     required String justification,
   }) async {
-    await insert(
-      ServiceOrderModel(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        createdAt: DateTime.now(),
-        customerId: customer.id ?? '',
-        customerName: customer.name,
-        serviceName: customer.serviceName,
-        status: ServiceOrderStatus.justified,
-        date: DateTime.now(),
-        justification: justification.trim(),
-      ),
+    final order = ServiceOrderModel(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      createdAt: DateTime.now(),
+      customerId: customer.id ?? '',
+      customerName: customer.name,
+      serviceName: customer.serviceName,
+      status: ServiceOrderStatus.justified,
+      date: DateTime.now(),
+      justification: justification.trim(),
     );
+
+    await insert(order);
 
     await _offlineSync.enqueue();
   }

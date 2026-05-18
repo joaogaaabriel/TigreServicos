@@ -13,11 +13,17 @@ class ServiceOrderLocalDataSource {
 
   Future<void> insert(ServiceOrder order) async {
     final db = await _dbHelper.database;
+
+    print('SALVANDO ORDEM...');
+    print(order.toMap());
+
     await db.insert(
       'service_orders',
       order.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    print('ORDEM SALVA!');
   }
 
   Future<void> update(ServiceOrder order) async {

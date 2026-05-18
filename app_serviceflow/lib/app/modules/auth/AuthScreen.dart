@@ -6,6 +6,7 @@ import '../../core/theme/AppColors.dart';
 import '../../shared/CustomButton.dart';
 import '../../shared/CustomTextField.dart';
 import '../../shared/SectionCard.dart';
+
 import 'AuthController.dart';
 import 'AuthRepository.dart';
 import 'UserModel.dart';
@@ -18,7 +19,9 @@ class AuthScreen extends StatefulWidget {
   });
 
   final AuthRepository authRepository;
-  final Future<void> Function(UserModel user) onAuthenticated;
+
+  final Future<void> Function(UserModel user)
+  onAuthenticated;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -27,23 +30,32 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen>
     with UiFeedbackMixin, ValidatorMixin {
   final _formKey = GlobalKey<FormState>();
+
   final _nameController = TextEditingController();
+
   final _emailController = TextEditingController();
+
   final _passwordController = TextEditingController();
+
   late final AuthController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AuthController(repository: widget.authRepository);
+
+    _controller = AuthController(
+      repository: widget.authRepository,
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+
     super.dispose();
   }
 
@@ -51,6 +63,10 @@ class _AuthScreenState extends State<AuthScreen>
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    // guarda o modo atual ANTES do submit
+    final wasRegisterMode =
+        _controller.isRegisterMode;
 
     try {
       final user = await _controller.submit(
@@ -63,9 +79,39 @@ class _AuthScreenState extends State<AuthScreen>
         return;
       }
 
+      // CADASTRO
+      if (wasRegisterMode) {
+        showMessage(
+          'Cadastro realizado com sucesso!',
+        );
+
+        // volta para login
+        _controller.toggleMode();
+
+        // mantém email preenchido
+        _emailController.text = user.email;
+
+        // mantém senha preenchida
+        _passwordController.text =
+            _passwordController.text;
+
+        // limpa nome
+        _nameController.clear();
+
+        setState(() {});
+
+        return;
+      }
+
+      // LOGIN
       await widget.onAuthenticated(user);
     } catch (error) {
-      showMessage(error.toString().replaceFirst('Exception: ', ''));
+      showMessage(
+        error.toString().replaceFirst(
+          'Exception: ',
+          '',
+        ),
+      );
     }
   }
 
@@ -80,72 +126,107 @@ class _AuthScreenState extends State<AuthScreen>
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
+                  constraints:
+                  const BoxConstraints(
+                    maxWidth: 420,
+                  ),
                   child: SectionCard(
-                    padding: const EdgeInsets.all(24),
+                    padding:
+                    const EdgeInsets.all(24),
                     child: Form(
                       key: _formKey,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
                         children: [
                           const Text(
                             '\u{1F42F} Tigre Servicos',
                             style: TextStyle(
                               fontSize: 28,
-                              fontWeight: FontWeight.w700,
+                              fontWeight:
+                              FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          /*Text(
-                            _controller.isRegisterMode
-                                ? 'Cadastro local simples para testar o fluxo do app.'
-                                : 'Entre com seu cadastro salvo no aparelho.',
-                            style: const TextStyle(color: Colors.black54),
-                          ),*/
+
                           const SizedBox(height: 24),
-                          if (_controller.isRegisterMode) ...[
+
+                          if (_controller
+                              .isRegisterMode) ...[
                             CustomTextField(
-                              controller: _nameController,
+                              controller:
+                              _nameController,
                               label: 'Nome',
                               validator: (value) =>
-                                  requiredField(value, 'o nome'),
+                                  requiredField(
+                                    value,
+                                    'o nome',
+                                  ),
                             ),
-                            const SizedBox(height: 16),
+
+                            const SizedBox(
+                              height: 16,
+                            ),
                           ],
+
                           CustomTextField(
-                            controller: _emailController,
+                            controller:
+                            _emailController,
                             label: 'E-mail',
-                            keyboardType: TextInputType.emailAddress,
+                            keyboardType:
+                            TextInputType
+                                .emailAddress,
                             validator: email,
                           ),
+
                           const SizedBox(height: 16),
+
                           CustomTextField(
-                            controller: _passwordController,
+                            controller:
+                            _passwordController,
                             label: 'Senha',
                             obscureText: true,
                             validator: (value) =>
-                                requiredField(value, 'a senha'),
+                                requiredField(
+                                  value,
+                                  'a senha',
+                                ),
                           ),
+
                           const SizedBox(height: 24),
+
                           CustomButton(
-                            label: _controller.isLoading
+                            label:
+                            _controller.isLoading
                                 ? 'Processando...'
-                                : _controller.isRegisterMode
-                                    ? 'Cadastrar'
-                                    : 'Entrar',
-                            onPressed: _controller.isLoading ? null : _submit,
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: _controller.isLoading
+                                : _controller
+                                .isRegisterMode
+                                ? 'Cadastrar'
+                                : 'Entrar',
+
+                            onPressed:
+                            _controller.isLoading
                                 ? null
-                                : _controller.toggleMode,
+                                : _submit,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          TextButton(
+                            onPressed:
+                            _controller.isLoading
+                                ? null
+                                : _controller
+                                .toggleMode,
+
                             child: Text(
-                              _controller.isRegisterMode
+                              _controller
+                                  .isRegisterMode
                                   ? 'Ja tem conta? Realizar Login'
                                   : 'Cadastre-se',
+
                               style: const TextStyle(
-                                color: AppColors.primaryDark,
+                                color: AppColors
+                                    .primaryDark,
                               ),
                             ),
                           ),

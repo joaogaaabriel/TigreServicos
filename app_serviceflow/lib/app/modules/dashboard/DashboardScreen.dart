@@ -28,20 +28,26 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   late List<CustomerModel> _customers;
+
   final Map<String, bool> _attendanceMap = {};
 
   @override
   void initState() {
     super.initState();
+
     _customers = widget.serviceOrderRepository.getMockedCustomers();
+
     _loadAttendanceStatus();
   }
 
   Future<void> _loadAttendanceStatus() async {
     final newMap = <String, bool>{};
+
     for (final customer in _customers) {
-      newMap[customer.id ?? ''] = await widget.serviceOrderRepository
-          .hasAttendanceToday(customer.id ?? '');
+      newMap[customer.id ?? ''] =
+      await widget.serviceOrderRepository.hasAttendanceToday(
+        customer.id ?? '',
+      );
     }
 
     if (mounted) {
@@ -107,7 +113,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 54, 20, 24),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primaryDark,
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -128,7 +137,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(height: 6),
                           Text(
                             'Ola, ${widget.currentUser.name}',
-                            style: const TextStyle(color: Colors.white70),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                            ),
                           ),
                         ],
                       ),
@@ -166,7 +177,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Expanded(
                             child: Text(
                               'Consultar atendimentos',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           Icon(Icons.assignment_outlined),
@@ -196,6 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
+
                   ..._customers.map(_buildCustomerCard),
                 ],
               ),
@@ -207,7 +221,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildCustomerCard(CustomerModel customer) {
-    final hasAttendance = _attendanceMap[customer.id ?? ''] ?? false;
+    final hasAttendance =
+        _attendanceMap[customer.id ?? ''] ?? false;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -231,7 +246,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
+
             const SizedBox(width: 12),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,52 +260,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+
                   const SizedBox(height: 6),
+
                   Text(
                     customer.serviceName,
-                    style: const TextStyle(color: Colors.black54),
+                    style: const TextStyle(
+                      color: Colors.black54,
+                    ),
                   ),
+
                   const SizedBox(height: 10),
+
                   if (hasAttendance)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE7F8EC),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
+                    Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding:
+                          const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE7F8EC),
+                            borderRadius:
+                            BorderRadius.circular(16),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle_outline,
+                                size: 18,
+                                color: AppColors.success,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'OK',
+                                style: TextStyle(
+                                  color: AppColors.success,
+                                  fontWeight:
+                                  FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        const Text(
+                          'Atendimento finalizado',
+                          style: TextStyle(
                             color: AppColors.success,
+                            fontWeight: FontWeight.w600,
                           ),
-                          SizedBox(width: 6),
-                          Text(
-                            'OK',
-                            style: TextStyle(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                 ],
               ),
             ),
+
             PopupMenuButton<String>(
-              onSelected: (value) {
+              enabled: !hasAttendance,
+
+              onSelected: hasAttendance
+                  ? null
+                  : (value) {
                 if (value == 'realizar') {
                   _openPerformService(customer);
                 } else {
                   _openJustifyVisit(customer);
                 }
               },
+
+              icon: Icon(
+                hasAttendance
+                    ? Icons.lock_outline
+                    : Icons.more_vert,
+                color: hasAttendance
+                    ? Colors.grey
+                    : Colors.black,
+              ),
+
               itemBuilder: (context) => const [
                 PopupMenuItem(
                   value: 'realizar',

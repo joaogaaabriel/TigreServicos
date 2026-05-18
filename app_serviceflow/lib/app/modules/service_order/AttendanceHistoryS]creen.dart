@@ -159,7 +159,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.12),
+                        color: badgeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
