@@ -1,5 +1,5 @@
-import 'package:app_serviceflow/app/core/services/ServiceOrder.dart';
-import 'package:app_serviceflow/app/core/services/DatabaseHelper.dart';
+import 'package:app_serviceflow/tigreservicos/core/services/ServiceOrder.dart';
+import 'package:app_serviceflow/tigreservicos/core/services/DatabaseHelper.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// ---------------------------------------------------------------------------

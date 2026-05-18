@@ -1,69 +1,92 @@
-import 'dart:convert';
-
-import '../../core/services/StorageService.dart';
-import '../../core/services/DatabaseHelper.dart';
 import '../../core/services/OfflineSync.dart';
+import '../../core/services/StorageService.dart';
 import 'ServiceOderModel.dart';
+import 'ServiceOrderLocalDatasource.dart';
 import 'CustomerModel.dart';
 
 class ServiceOrderRepository {
   ServiceOrderRepository({
-    required StorageService storageService,
-    required DatabaseHelper databaseHelper,
-    required OfflineSync offlineSync,
-  })  : _storageService = storageService,
-        _offlineSync = offlineSync;
+    required this.localDatasource,
+    required this.storageService,
+    required this.offlineSync,
+  });
 
-  final StorageService _storageService;
-  final OfflineSync _offlineSync;
+  final ServiceOrderLocalDatasource localDatasource;
+  final StorageService storageService;
+  final OfflineSync offlineSync;
 
-  static const _storageKey = 'service_orders';
-
-  Future<List<ServiceOrderModel>> getAll() async {
-    final jsonString = _storageService.getString(_storageKey);
-    if (jsonString == null || jsonString.isEmpty) {
-      return [];
-    }
-
-    final list = (jsonDecode(jsonString) as List<dynamic>)
-        .map((item) => Map<String, dynamic>.from(item as Map))
-        .toList();
-
-    return list.map((map) => ServiceOrderModel.fromMap(map)).toList();
-  }
-
-  Future<void> saveAll(List<ServiceOrderModel> items) async {
-    final encoded = jsonEncode(items.map((item) => item.toMap()).toList());
-    await _storageService.setString(_storageKey, encoded);
+  Future<List<ServiceOrderModel>> getAll() {
+    return localDatasource.getAll();
   }
 
   Future<void> insert(ServiceOrderModel item) async {
-    final items = await getAll();
-    items.add(item);
-    await saveAll(items);
+    await localDatasource.insert(item);
+    await offlineSync.enqueue();
   }
 
   Future<void> update(ServiceOrderModel item) async {
-    final items = await getAll();
-    final index = items.indexWhere((current) => current.id == item.id);
-
-    if (index == -1) {
-      items.add(item);
-    } else {
-      items[index] = item;
-    }
-
-    await saveAll(items);
+    await localDatasource.update(item);
+    await offlineSync.enqueue();
   }
 
   Future<void> delete(String id) async {
-    final items = await getAll();
-    items.removeWhere((item) => item.id == id);
-    await saveAll(items);
+    await localDatasource.delete(id);
+    await offlineSync.enqueue();
   }
 
+  Future<List<ServiceOrderModel>> getTodayOrders() {
+    return localDatasource.getToday();
+  }
+
+  Future<bool> hasAttendanceToday(String customerId) async {
+    final today = await getTodayOrders();
+    return today.any((o) => o.customerId == customerId);
+  }
+
+  Future<void> saveRealizedOrder({
+    required CustomerModel customer,
+    required String entryPhotoBase64,
+    required String exitPhotoBase64,
+    required String signatureBase64,
+  }) async {
+    await insert(
+      ServiceOrderModel(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        createdAt: DateTime.now(),
+        customerId: customer.id ?? '',
+        customerName: customer.name,
+        serviceName: customer.serviceName,
+        status: ServiceOrderStatus.realized,
+        date: DateTime.now(),
+        entryPhotoBase64: entryPhotoBase64,
+        exitPhotoBase64: exitPhotoBase64,
+        signatureBase64: signatureBase64,
+      ),
+    );
+  }
+
+  Future<void> saveJustifiedOrder({
+    required CustomerModel customer,
+    required String justification,
+  }) async {
+    await insert(
+      ServiceOrderModel(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        createdAt: DateTime.now(),
+        customerId: customer.id ?? '',
+        customerName: customer.name,
+        serviceName: customer.serviceName,
+        status: ServiceOrderStatus.justified,
+        date: DateTime.now(),
+        justification: justification.trim(),
+      ),
+    );
+  }
+
+  // 🔥 FIX AQUI: agora funciona de verdade
   List<CustomerModel> getMockedCustomers() {
     final now = DateTime.now();
+
     return [
       CustomerModel(
         id: 'c1',
@@ -90,66 +113,5 @@ class ServiceOrderRepository {
         serviceName: 'Troca de tomadas e testes finais',
       ),
     ];
-  }
-
-  Future<List<ServiceOrderModel>> getTodayOrders() async {
-    final allOrders = await getAll();
-    final now = DateTime.now();
-
-    return allOrders.where((order) {
-      return order.date.year == now.year &&
-          order.date.month == now.month &&
-          order.date.day == now.day;
-    }).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-  }
-
-  Future<bool> hasAttendanceToday(String customerId) async {
-    final todayOrders = await getTodayOrders();
-    return todayOrders.any((order) => order.customerId == customerId);
-  }
-
-  Future<void> saveRealizedOrder({
-    required CustomerModel customer,
-    required String entryPhotoBase64,
-    required String exitPhotoBase64,
-    required String signatureBase64,
-  }) async {
-    await insert(
-      ServiceOrderModel(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        createdAt: DateTime.now(),
-        customerId: customer.id ?? '',
-        customerName: customer.name,
-        serviceName: customer.serviceName,
-        status: ServiceOrderStatus.realized,
-        date: DateTime.now(),
-        entryPhotoBase64: entryPhotoBase64,
-        exitPhotoBase64: exitPhotoBase64,
-        signatureBase64: signatureBase64,
-      ),
-    );
-
-    await _offlineSync.enqueue();
-  }
-
-  Future<void> saveJustifiedOrder({
-    required CustomerModel customer,
-    required String justification,
-  }) async {
-    await insert(
-      ServiceOrderModel(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        createdAt: DateTime.now(),
-        customerId: customer.id ?? '',
-        customerName: customer.name,
-        serviceName: customer.serviceName,
-        status: ServiceOrderStatus.justified,
-        date: DateTime.now(),
-        justification: justification.trim(),
-      ),
-    );
-
-    await _offlineSync.enqueue();
   }
 }

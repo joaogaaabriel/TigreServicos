@@ -30,10 +30,12 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   }
 
   List<ServiceOrderModel> _applyFilter(List<ServiceOrderModel> orders) {
-    if (_filter == 'realizado')
+    if (_filter == 'realizado') {
       return orders.where((o) => o.isRealized).toList();
-    if (_filter == 'justificado')
+    }
+    if (_filter == 'justificado') {
       return orders.where((o) => o.isJustified).toList();
+    }
     return orders;
   }
 
@@ -191,7 +193,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: badgeColor.withOpacity(0.15),
+                backgroundColor: badgeColor.withValues(alpha: 0.15),
                 child: Icon(badgeIcon, color: badgeColor),
               ),
               const SizedBox(width: 12),
@@ -213,7 +215,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.12),
+                        color: badgeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(

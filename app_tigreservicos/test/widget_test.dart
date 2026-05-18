@@ -1,32 +1,38 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:app_serviceflow/tigreservicos/modules/service_order/ServiceOderModel.dart';
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp() as Widget);
+  test('ServiceOrderModel serializes and deserializes correctly', () {
+    final createdAt = DateTime(2026, 5, 18, 9);
+    final date = DateTime(2026, 5, 18, 10);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    final order = ServiceOrderModel(
+      id: 'order-1',
+      createdAt: createdAt,
+      customerId: 'customer-1',
+      customerName: 'Cliente Teste',
+      serviceName: 'Instalacao',
+      status: ServiceOrderStatus.realized,
+      date: date,
+      entryPhotoBase64: 'entry',
+      exitPhotoBase64: 'exit',
+      signatureBase64: 'signature',
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    final restored = ServiceOrderModel.fromMap(order.toMap());
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(restored.id, 'order-1');
+    expect(restored.createdAt, createdAt);
+    expect(restored.customerId, 'customer-1');
+    expect(restored.customerName, 'Cliente Teste');
+    expect(restored.serviceName, 'Instalacao');
+    expect(restored.status, ServiceOrderStatus.realized);
+    expect(restored.date, date);
+    expect(restored.entryPhotoBase64, 'entry');
+    expect(restored.exitPhotoBase64, 'exit');
+    expect(restored.signatureBase64, 'signature');
+    expect(restored.isRealized, isTrue);
+    expect(restored.isJustified, isFalse);
   });
-}
-
-class MyApp {
-  const MyApp();
 }

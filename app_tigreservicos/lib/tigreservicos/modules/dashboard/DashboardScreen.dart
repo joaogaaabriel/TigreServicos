@@ -328,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.12),
+                        color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Row(

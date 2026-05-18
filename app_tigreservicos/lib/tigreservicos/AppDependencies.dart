@@ -1,11 +1,12 @@
-import 'core/services/UserLocalDataSource.dart';
 import 'core/services/DatabaseHelper.dart';
 import 'core/services/DioClient.dart';
 import 'core/services/OfflineSync.dart';
 import 'core/services/StorageService.dart';
 
+import 'core/services/UserLocalDataSource.dart';
 import 'modules/auth/AuthRepository.dart';
 import 'modules/service_order/ServiceOrderRepository.dart';
+import 'modules/service_order/ServiceOrderLocalDatasource.dart';
 
 class AppDependencies {
   AppDependencies._({
@@ -27,7 +28,6 @@ class AppDependencies {
 
   static Future<AppDependencies> create() async {
     final storageService = StorageService();
-
     await storageService.init();
 
     final databaseHelper = DatabaseHelper.instance;
@@ -40,21 +40,26 @@ class AppDependencies {
       storageService: storageService,
     );
 
+    final userLocalDataSource = UserLocalDataSource();
+
+    final authRepository = AuthRepository(
+      storageService: storageService,
+      userLocalDataSource: userLocalDataSource,
+    );
+
+    final serviceOrderRepository = ServiceOrderRepository(
+      localDatasource: ServiceOrderLocalDatasource(databaseHelper),
+      storageService: storageService,
+      offlineSync: offlineSync,
+    );
+
     return AppDependencies._(
       storageService: storageService,
       databaseHelper: databaseHelper,
       dioClient: dioClient,
       offlineSync: offlineSync,
-
-      authRepository: AuthRepository(
-        storageService: storageService,
-        userLocalDataSource: UserLocalDataSource(),
-      ),
-
-      serviceOrderRepository: ServiceOrderRepository(
-        databaseHelper: databaseHelper,
-        offlineSync: offlineSync,
-      ),
+      authRepository: authRepository,
+      serviceOrderRepository: serviceOrderRepository,
     );
   }
 }

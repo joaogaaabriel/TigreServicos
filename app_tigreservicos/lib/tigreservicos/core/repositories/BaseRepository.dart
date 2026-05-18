@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:app_serviceflow/app/core/models/baseModel.dart';
-import 'package:app_serviceflow/app/core/services/StorageService.dart';
+import 'package:app_serviceflow/tigreservicos/core/models/BaseModel.dart';
+import 'package:app_serviceflow/tigreservicos/core/services/StorageService.dart';
 
 /// ---------------------------------------------------------------------------
 /// BaseRepository
@@ -21,7 +21,7 @@ import 'package:app_serviceflow/app/core/services/StorageService.dart';
 abstract class BaseRepository<T extends BaseModel> {
   /// Construtor recebe o serviço de armazenamento local.
   BaseRepository({required StorageService storageService})
-    : _storageService = storageService;
+      : _storageService = storageService;
 
   /// Serviço responsável por persistência local (ex: SharedPreferences, Hive etc.)
   final StorageService _storageService;

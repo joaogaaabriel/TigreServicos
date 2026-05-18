@@ -1,5 +1,5 @@
-import 'package:app_serviceflow/app/core/services/ServiceOrder.dart';
-import 'package:app_serviceflow/app/core/services/ServiceOrderLocalDatasource.dart';
+import 'package:app_serviceflow/tigreservicos/core/services/ServiceOrder.dart';
+import 'package:app_serviceflow/tigreservicos/core/services/ServiceOrderLocalDatasource.dart';
 
 /// ---------------------------------------------------------------------------
 /// ServiceOrderRepository
@@ -16,7 +16,7 @@ import 'package:app_serviceflow/app/core/services/ServiceOrderLocalDatasource.da
 class ServiceOrderRepository {
   /// Construtor recebe a dependência do DataSource local.
   ServiceOrderRepository({required ServiceOrderLocalDataSource localDataSource})
-    : _localDataSource = localDataSource;
+      : _localDataSource = localDataSource;
 
   /// Fonte de dados local responsável pelas operações reais de persistência.
   final ServiceOrderLocalDataSource _localDataSource;

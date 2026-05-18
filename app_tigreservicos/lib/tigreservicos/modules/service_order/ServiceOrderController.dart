@@ -32,7 +32,7 @@ class ServiceOrderController extends ChangeNotifier {
   bool get canFinishRealized =>
       _entryPhotoBase64 != null &&
       _exitPhotoBase64 != null &&
-      !signatureController.isEmpty;
+      signatureController.isNotEmpty;
 
   Future<void> pickEntryPhotoFrom(ImageSource source) async {
     _entryPhotoBase64 = await _pickImageAsBase64(source) ?? _entryPhotoBase64;
