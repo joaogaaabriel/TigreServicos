@@ -1,4 +1,5 @@
 import 'package:app_workmatch/model/UserModel.dart';
+import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
 import 'package:app_workmatch/tigreservicos/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
@@ -156,7 +157,13 @@ class HomeClienteScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _MeusServicos(
               onVerTodos: onVerServicos,
-              onTap: onVerServicosPorStatus,
+              onTap: (_) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MeusServicosScreen(user: user),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 24),
             _ComoFuncionaSection(),
