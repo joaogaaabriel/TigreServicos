@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'AppController.dart';
 import 'AppDependencies.dart';
-import 'modules/splash/SplashScreen.dart';
 
 class AppView extends StatefulWidget {
   const AppView({
@@ -25,7 +24,12 @@ class _AppViewState extends State<AppView> {
   Widget build(BuildContext context) {
     switch (widget.controller.status) {
       case AppStatus.splash:
-        return const SplashScreen();
+        return const Scaffold(
+          backgroundColor: Color(0xFF0A1628),
+          body: Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        );
 
       case AppStatus.unauthenticated:
         return AuthScreen(
@@ -36,7 +40,11 @@ class _AppViewState extends State<AppView> {
       case AppStatus.authenticated:
         final user = widget.controller.currentUser;
 
-        if (user == null) return const SplashScreen();
+        if (user == null)
+          return const Scaffold(
+            backgroundColor: Color(0xFF0A1628),
+            body: Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
 
         // Roteamento por role — igual ao AppRouter.dart do frontend
         if (user.isProfissional) {

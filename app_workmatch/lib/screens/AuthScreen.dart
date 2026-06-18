@@ -1,12 +1,12 @@
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/repository/AuthRepository.dart';
-import 'package:app_workmatch/tigreservicos/core/mixins/UiFeedbackMixin.dart';
-import 'package:app_workmatch/tigreservicos/core/mixins/ValidatorMixin.dart';
-import 'package:app_workmatch/tigreservicos/core/theme/AppColors.dart';
-import 'package:app_workmatch/tigreservicos/modules/auth/AuthController.dart';
-import 'package:app_workmatch/tigreservicos/shared/CustomButton.dart';
-import 'package:app_workmatch/tigreservicos/shared/CustomTextField.dart';
-import 'package:app_workmatch/tigreservicos/shared/SectionCard.dart';
+import 'package:app_workmatch/auth/mixins/UiFeedbackMixin.dart';
+import 'package:app_workmatch/auth/mixins/ValidatorMixin.dart';
+import 'package:app_workmatch/shared/CustomButton.dart';
+import 'package:app_workmatch/shared/CustomTextField.dart';
+import 'package:app_workmatch/shared/SectionCard.dart';
+import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/auth/AuthController.dart';
 import 'package:flutter/material.dart';
 
 // ── Constantes ────────────────────────────────────────────────────────────────

@@ -3,9 +3,9 @@ import 'package:app_workmatch/repository/AuthRepository.dart';
 import 'package:app_workmatch/screens/HomeClienteScreen.dart';
 import 'package:app_workmatch/screens/AuthScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
-import 'package:app_workmatch/tigreservicos/core/services/StorageService.dart';
-import 'package:app_workmatch/tigreservicos/core/services/UserLocalDataSource.dart';
-import 'package:app_workmatch/tigreservicos/core/theme/AppColors.dart';
+import 'package:app_workmatch/services/StorageService.dart';
+import 'package:app_workmatch/services/UserLocalDataSource.dart';
+import 'package:app_workmatch/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
-import 'package:app_workmatch/tigreservicos/core/theme/AppColors.dart';
+import 'package:app_workmatch/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 class _StatusCard {

@@ -1,6 +1,5 @@
+import 'package:app_workmatch/theme/AppColors.dart';
 import 'package:flutter/material.dart';
-
-import '../core/theme/AppColors.dart';
 
 /// Botão padrão do projeto — cor sincronizada com o CEL Design System v3.0.
 class CustomButton extends StatelessWidget {

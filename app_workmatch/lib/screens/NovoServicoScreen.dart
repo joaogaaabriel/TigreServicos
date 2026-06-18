@@ -2,7 +2,7 @@ import 'package:app_workmatch/services/IaService.dart';
 import 'package:app_workmatch/services/ServicoService.dart';
 import 'package:flutter/material.dart';
 import 'package:app_workmatch/model/UserModel.dart';
-import 'package:app_workmatch/tigreservicos/core/theme/AppColors.dart';
+import 'package:app_workmatch/theme/AppColors.dart';
 
 class NovoServicoScreen extends StatefulWidget {
   final UserModel user;

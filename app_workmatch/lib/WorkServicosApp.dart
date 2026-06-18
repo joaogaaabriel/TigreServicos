@@ -1,20 +1,20 @@
+import 'package:app_workmatch/theme/AppTheme.dart';
 import 'package:flutter/material.dart';
 
 import 'AppController.dart';
 import 'AppDependencies.dart';
 import 'AppView.dart';
-import 'core/theme/AppTheme.dart';
 
-class TigreServicosApp extends StatefulWidget {
-  const TigreServicosApp({super.key, required this.dependencies});
+class WorkServicosApp extends StatefulWidget {
+  const WorkServicosApp({super.key, required this.dependencies});
 
   final AppDependencies dependencies;
 
   @override
-  State<TigreServicosApp> createState() => _TigreServicosAppState();
+  State<WorkServicosApp> createState() => _WorkServicosAppState();
 }
 
-class _TigreServicosAppState extends State<TigreServicosApp> {
+class _WorkServicosAppState extends State<WorkServicosApp> {
   late final AppController _controller;
 
   @override

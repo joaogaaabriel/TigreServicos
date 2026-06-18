@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:app_workmatch/model/UserModel.dart';
-import 'package:app_workmatch/tigreservicos/core/services/StorageService.dart';
-import 'package:app_workmatch/tigreservicos/core/services/UserLocalDataSource.dart';
+import 'package:app_workmatch/services/StorageService.dart';
+import 'package:app_workmatch/services/UserLocalDataSource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
