@@ -38,6 +38,78 @@ class ServicoService {
     _api.throwFromResponse(res);
   }
 
+  // ── Buscar serviço por ID ─────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> buscarServico(String servicoId) async {
+    final res = await _api.get('/api/servicos/$servicoId');
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+
+    _api.throwFromResponse(res);
+  }
+
+  // ── Listar candidatos de um serviço ───────────────────────────────────────
+
+  Future<List<dynamic>> listarCandidatos(String servicoId) async {
+    final res = await _api.get('/api/candidaturas/servico/$servicoId');
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+
+    _api.throwFromResponse(res);
+  }
+
+  // ── Avançar serviço (selecionar profissional) ─────────────────────────────
+
+  Future<void> avancarServico({
+    required String servicoId,
+    required String profissionalId,
+  }) async {
+    final res = await _api.put(
+      '/api/servicos/$servicoId/avancar?profissionalId=$profissionalId',
+      {},
+    );
+
+    if (res.statusCode == 200 || res.statusCode == 204) return;
+
+    _api.throwFromResponse(res);
+  }
+
+  // ── Mensagens ─────────────────────────────────────────────────────────────
+
+  Future<List<dynamic>> listarMensagens(String servicoId) async {
+    final res = await _api.get('/api/mensagens/servico/$servicoId');
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+
+    _api.throwFromResponse(res);
+  }
+
+  Future<void> enviarMensagem({
+    required String servicoId,
+    required String remetenteId,
+    required String remetenteNome,
+    required String role,
+    required String conteudo,
+  }) async {
+    final res = await _api.post('/api/mensagens', {
+      'servicoId': servicoId,
+      'remetenteId': remetenteId,
+      'remetenteNome': remetenteNome,
+      'role': role,
+      'conteudo': conteudo,
+    });
+
+    if (res.statusCode == 200 || res.statusCode == 201) return;
+
+    _api.throwFromResponse(res);
+  }
+
   // ── Listar publicados (com filtros e paginação) ───────────────────────────
 
   Future<List<dynamic>> listarPublicados({
