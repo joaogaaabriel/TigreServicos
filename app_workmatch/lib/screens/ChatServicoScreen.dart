@@ -109,12 +109,12 @@ class _ChatServicoScreenState extends State<ChatServicoScreen> {
       await widget.servicoService.enviarMensagem(
         servicoId: widget.servicoId,
         remetenteId: widget.user.id,
-        remetenteRole: widget.user.role,
+        remetenteTipo: widget.user.role,
         conteudo: texto,
       );
       await _carregarMensagens();
     } catch (_) {
-      // erro silencioso — mantém o campo limpo para reenvio
+      print(_);
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
