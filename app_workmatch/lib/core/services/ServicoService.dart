@@ -93,15 +93,13 @@ class ServicoService {
   Future<void> enviarMensagem({
     required String servicoId,
     required String remetenteId,
-    required String remetenteNome,
-    required String role,
+    required String remetenteRole,
     required String conteudo,
   }) async {
     final res = await _api.post('/api/mensagens', {
       'servicoId': servicoId,
       'remetenteId': remetenteId,
-      'remetenteNome': remetenteNome,
-      'role': role,
+      'remetenteRole': remetenteRole,
       'conteudo': conteudo,
     });
 
