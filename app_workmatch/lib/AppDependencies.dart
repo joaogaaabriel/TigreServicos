@@ -1,24 +1,27 @@
+import 'package:app_workmatch/core/network/ApiClient.dart';
+import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/repository/AuthRepository.dart';
-import 'package:app_workmatch/services/StorageService.dart';
-import 'package:app_workmatch/services/UserLocalDataSource.dart';
 
+/// Composição de todas as dependências do app.
+/// Criado uma única vez em [main] e repassado pela árvore de widgets.
 class AppDependencies {
-  AppDependencies._({required this.authRepository});
+  AppDependencies._({
+    required this.apiClient,
+    required this.authRepository,
+    required this.servicoService,
+  });
 
+  final ApiClient apiClient;
   final AuthRepository authRepository;
+  final ServicoService servicoService;
 
   static Future<AppDependencies> create() async {
-    final storageService = StorageService();
-    await storageService.init();
+    final apiClient = ApiClient();
 
-    final userLocalDataSource = UserLocalDataSource();
-
-    final authRepository = AuthRepository(
-      baseUrl: 'http://192.168.1.7:8082',
-      storageService: storageService,
-      userLocalDataSource: userLocalDataSource,
+    return AppDependencies._(
+      apiClient: apiClient,
+      authRepository: AuthRepository(apiClient: apiClient),
+      servicoService: ServicoService(apiClient: apiClient),
     );
-
-    return AppDependencies._(authRepository: authRepository);
   }
 }

@@ -1,29 +1,33 @@
+import 'package:app_workmatch/AppDependencies.dart';
+import 'package:app_workmatch/core/network/ApiClient.dart';
+import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/model/UserModel.dart';
-import 'package:app_workmatch/repository/AuthRepository.dart';
-import 'package:app_workmatch/screens/HomeClienteScreen.dart';
 import 'package:app_workmatch/screens/AuthScreen.dart';
+import 'package:app_workmatch/screens/HomeClienteScreen.dart';
+import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
-import 'package:app_workmatch/services/StorageService.dart';
-import 'package:app_workmatch/services/UserLocalDataSource.dart';
-import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter extends StatefulWidget {
-  const AppRouter({super.key});
+  const AppRouter(
+      {super.key, required this.dependencies, required ApiClient apiClient})
+      : _apiClient = apiClient;
+
+  final AppDependencies dependencies;
+  final ApiClient _apiClient;
 
   @override
   State<AppRouter> createState() => _AppRouterState();
 }
 
-final storageService = StorageService();
-final userLocalDataSource = UserLocalDataSource();
-
 class _AppRouterState extends State<AppRouter> {
-  final _repo = AuthRepository(
-      storageService: storageService,
-      userLocalDataSource: UserLocalDataSource());
   UserModel? _user;
   bool _checking = true;
+
+  AppDependencies get _deps => widget.dependencies;
+
+  ApiClient get apiClient => apiClient;
 
   @override
   void initState() {
@@ -31,14 +35,14 @@ class _AppRouterState extends State<AppRouter> {
     _restoreSession();
   }
 
-  // Tenta restaurar sessão salva no SharedPreferences
   Future<void> _restoreSession() async {
-    final saved = await _repo.getStoredUser();
-    if (mounted)
+    final saved = await _deps.authRepository.getStoredUser();
+    if (mounted) {
       setState(() {
         _user = saved;
         _checking = false;
       });
+    }
   }
 
   Future<void> _onAuthenticated(UserModel user) async {
@@ -46,61 +50,74 @@ class _AppRouterState extends State<AppRouter> {
   }
 
   Future<void> _onLogout() async {
-    await _repo.logout();
+    await _deps.authRepository.logout();
     if (mounted) setState(() => _user = null);
+  }
+
+  void _navegarParaNovoServico() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NovoServicoScreen(
+          user: _user!,
+          servicoService: _deps.servicoService,
+        ),
+      ),
+    );
+  }
+
+  void _navegarParaMeusServicos() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MeusServicosScreen(
+          user: _user!,
+          servicoService: _deps.servicoService,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Splash mínimo enquanto verifica sessão
     if (_checking) {
       return const Scaffold(
         backgroundColor: AppColors.navy,
-        body: Center(child: CircularProgressIndicator(color: AppColors.yellow)),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.yellow),
+        ),
       );
     }
 
-    // Não autenticado → AuthScreen
     if (_user == null) {
       return AuthScreen(
-        authRepository: _repo,
+        authRepository: _deps.authRepository,
         onAuthenticated: _onAuthenticated,
       );
     }
 
-    return _user!.isProfissional
-        ? _PlaceholderProfissional(
-            user: _user!,
-            onLogout: _onLogout,
-          )
-        : HomeClienteScreen(
-            user: _user!,
-            onNovoServico: () {
-              print('ENTROU NO APP ROUTER');
+    if (_user!.isProfissional) {
+      return _PlaceholderProfissional(user: _user!, onLogout: _onLogout);
+    }
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => NovoServicoScreen(
-                    user: _user!,
-                  ),
-                ),
-              );
-            },
-            onVerServicos: () {
-              // TODO
-            },
-            onVerServicosPorStatus: (status) {
-              // TODO
-            },
-            onLogout: _onLogout,
-          );
+    return HomeClienteScreen(
+      user: _user!,
+      onNovoServico: _navegarParaNovoServico,
+      onVerServicos: _navegarParaMeusServicos,
+      onVerServicosPorStatus: (status) {
+        // TODO
+      },
+      onLogout: _onLogout,
+      servicoService: ServicoService(
+        apiClient: widget._apiClient,
+      ),
+    );
   }
 }
 
-// Placeholder temporário para profissional — substitua por HomeProfissionalScreen
 class _PlaceholderProfissional extends StatelessWidget {
   const _PlaceholderProfissional({required this.user, required this.onLogout});
+
   final UserModel user;
   final VoidCallback onLogout;
 
@@ -109,8 +126,10 @@ class _PlaceholderProfissional extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.navy,
-        title: const Text('WorkMatch — Profissional',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        title: const Text(
+          'WorkMatch — Profissional',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -119,9 +138,11 @@ class _PlaceholderProfissional extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text('Olá, ${user.nome}!\nTela do profissional em breve.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, color: AppColors.textMid)),
+        child: Text(
+          'Olá, ${user.nome}!\nTela do profissional em breve.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: AppColors.textMid),
+        ),
       ),
     );
   }

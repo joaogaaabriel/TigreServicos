@@ -1,3 +1,5 @@
+import 'package:app_workmatch/core/network/ApiClient.dart';
+import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/screens/HomeClienteScreen.dart';
 import 'package:app_workmatch/screens/AuthScreen.dart';
 import 'package:flutter/material.dart';
@@ -6,20 +8,24 @@ import 'AppController.dart';
 import 'AppDependencies.dart';
 
 class AppView extends StatefulWidget {
-  const AppView({
-    super.key,
-    required this.controller,
-    required this.dependencies,
-  });
+  const AppView(
+      {super.key,
+      required this.controller,
+      required this.dependencies,
+      required ApiClient apiClient})
+      : _apiClient = apiClient;
 
   final AppController controller;
   final AppDependencies dependencies;
+  final ApiClient _apiClient;
 
   @override
   State<AppView> createState() => _AppViewState();
 }
 
 class _AppViewState extends State<AppView> {
+  ApiClient get apiClient => apiClient;
+
   @override
   Widget build(BuildContext context) {
     switch (widget.controller.status) {
@@ -40,11 +46,12 @@ class _AppViewState extends State<AppView> {
       case AppStatus.authenticated:
         final user = widget.controller.currentUser;
 
-        if (user == null)
+        if (user == null) {
           return const Scaffold(
             backgroundColor: Color(0xFF0A1628),
             body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
+        }
 
         // Roteamento por role — igual ao AppRouter.dart do frontend
         if (user.isProfissional) {
@@ -69,6 +76,9 @@ class _AppViewState extends State<AppView> {
             // TODO: navegar para lista filtrada por status
           },
           onLogout: widget.controller.logout,
+          servicoService: ServicoService(
+            apiClient: widget._apiClient,
+          ),
         );
     }
   }

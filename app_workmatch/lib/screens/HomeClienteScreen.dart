@@ -1,7 +1,8 @@
+import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
-import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 class _StatusCard {
@@ -92,6 +93,7 @@ class HomeClienteScreen extends StatelessWidget {
     this.onVerServicos,
     this.onVerServicosPorStatus,
     this.onLogout,
+    required this.servicoService,
   });
 
   final UserModel user;
@@ -99,6 +101,7 @@ class HomeClienteScreen extends StatelessWidget {
   final VoidCallback? onVerServicos;
   final void Function(String status)? onVerServicosPorStatus;
   final Future<void> Function()? onLogout;
+  final ServicoService servicoService;
 
   String get _primeiroNome {
     final partes = user.nome.trim().split(' ');
@@ -149,6 +152,7 @@ class HomeClienteScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => NovoServicoScreen(
                       user: user,
+                      servicoService: servicoService,
                     ),
                   ),
                 );
@@ -160,7 +164,10 @@ class HomeClienteScreen extends StatelessWidget {
               onTap: (_) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => MeusServicosScreen(user: user),
+                    builder: (_) => MeusServicosScreen(
+                      user: user,
+                      servicoService: servicoService,
+                    ),
                   ),
                 );
               },
@@ -177,6 +184,7 @@ class HomeClienteScreen extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => NovoServicoScreen(
                 user: user,
+                servicoService: servicoService,
               ),
             ),
           );

@@ -1,4 +1,4 @@
-import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 /// Botão padrão do projeto — cor sincronizada com o CEL Design System v3.0.

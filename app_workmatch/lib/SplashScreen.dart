@@ -1,4 +1,4 @@
-import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

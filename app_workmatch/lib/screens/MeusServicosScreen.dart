@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:app_workmatch/services/ServicoService.dart';
+import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/model/UserModel.dart';
-import 'package:app_workmatch/services/ServicoTab.dart';
+import 'package:app_workmatch/core/services/ServicoTab.dart';
 
 class MeusServicosScreen extends StatefulWidget {
-  final UserModel user;
+  const MeusServicosScreen({
+    super.key,
+    required this.user,
+    required this.servicoService,
+  });
 
-  const MeusServicosScreen({super.key, required this.user});
+  final UserModel user;
+  final ServicoService servicoService; // injetado — não mais estático
 
   @override
   State<MeusServicosScreen> createState() => _MeusServicosScreenState();
@@ -16,8 +21,7 @@ class _MeusServicosScreenState extends State<MeusServicosScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  List servicos = [];
-  Set avaliados = {};
+  List<dynamic> servicos = [];
   bool loading = true;
 
   final tabs = tabsCliente;
@@ -26,35 +30,38 @@ class _MeusServicosScreenState extends State<MeusServicosScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: tabs.length, vsync: this);
-    carregarDados();
+    _carregarDados();
   }
 
-  Future<void> carregarDados() async {
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _carregarDados() async {
     setState(() => loading = true);
-
     try {
-      final resServicos = await ServicoService.listarPorCliente(widget.user.id);
-
-      setState(() {
-        servicos = resServicos;
-        loading = false;
-      });
+      final result =
+          await widget.servicoService.listarPorCliente(widget.user.id);
+      if (mounted) setState(() => servicos = result);
     } catch (e) {
-      setState(() => loading = false);
+      // erro silencioso — lista fica vazia
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
-  List filtrar(int index) {
+  List<dynamic> _filtrar(int index) {
     final statuses = tabs[index].statuses;
-
-    return servicos.where((s) => statuses.contains(s["status"])).toList();
+    return servicos.where((s) => statuses.contains(s['status'])).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Meus Serviços"),
+        title: const Text('Meus Serviços'),
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs.map((t) => Tab(text: t.label)).toList(),
@@ -66,25 +73,24 @@ class _MeusServicosScreenState extends State<MeusServicosScreen>
           : TabBarView(
               controller: _tabController,
               children: List.generate(tabs.length, (i) {
-                final lista = filtrar(i);
+                final lista = _filtrar(i);
 
                 if (lista.isEmpty) {
                   return const Center(
-                    child: Text("Nenhum serviço nesta categoria."),
+                    child: Text('Nenhum serviço nesta categoria.'),
                   );
                 }
 
                 return ListView.builder(
                   itemCount: lista.length,
                   itemBuilder: (context, index) {
-                    final s = lista[index];
-
+                    final s = lista[index] as Map<String, dynamic>;
                     return Card(
                       margin: const EdgeInsets.all(10),
                       child: ListTile(
-                        title: Text(s["titulo"] ?? ""),
-                        subtitle: Text(s["status"] ?? ""),
-                        trailing: _statusBadge(s["status"]),
+                        title: Text(s['titulo'] ?? ''),
+                        subtitle: Text(s['status'] ?? ''),
+                        trailing: _statusBadge(s['status'] ?? ''),
                       ),
                     );
                   },
@@ -95,30 +101,29 @@ class _MeusServicosScreenState extends State<MeusServicosScreen>
   }
 
   Widget _statusBadge(String status) {
-    Color color;
-
+    final Color color;
     switch (status) {
-      case "PUBLICADO":
+      case 'PUBLICADO':
         color = Colors.blue;
         break;
-      case "NEGOCIANDO":
+      case 'NEGOCIANDO':
         color = Colors.orange;
         break;
-      case "CONTRATADO":
-      case "ANDAMENTO":
+      case 'CONTRATADO':
+      case 'ANDAMENTO':
         color = Colors.green;
         break;
-      case "FINALIZADO":
+      case 'FINALIZADO':
         color = Colors.grey;
         break;
       default:
-        color = Colors.black;
+        color = Colors.black54;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

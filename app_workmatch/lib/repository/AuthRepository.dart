@@ -1,91 +1,74 @@
 import 'dart:convert';
+import 'package:app_workmatch/core/network/ApiClient.dart';
+import 'package:app_workmatch/dto/CadastroUsuarioDto.dart'
+    hide CadastroUsuarioDto;
+import 'package:app_workmatch/dto/CadastroProfissionalDto.dart'
+    hide CadastroProfissionalDto;
 import 'package:app_workmatch/model/UserModel.dart';
-import 'package:app_workmatch/services/StorageService.dart';
-import 'package:app_workmatch/services/UserLocalDataSource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'dart:async';
 
 class AuthRepository {
-  AuthRepository(
-      {String? baseUrl,
-      required StorageService storageService,
-      required UserLocalDataSource userLocalDataSource})
-      : _base = baseUrl ?? 'http://10.0.2.2:8082';
+  AuthRepository({required ApiClient apiClient}) : _api = apiClient;
 
-  final String _base;
+  final ApiClient _api;
   static const _userKey = 'workmatch_user';
 
-  // ── Headers ───────────────────────────────────────────────────────────────
-
-  Map<String, String> get _headers => {'Content-Type': 'application/json'};
-
-  // ignore: unused_element
-  Future<Map<String, String>> _authHeaders() async {
-    final user = await getStoredUser();
-    return {
-      'Content-Type': 'application/json',
-      if (user?.token != null) 'Authorization': 'Bearer ${user!.token}',
-    };
-  }
+  // ── Login ─────────────────────────────────────────────────────────────────
 
   Future<UserModel> login({
     required String login,
     required String senha,
   }) async {
-    print('>>> fazendo requisição para $_base/api/login');
-    try {
-      final res = await http
-          .post(
-            Uri.parse('$_base/api/login'),
-            headers: _headers,
-            body: jsonEncode({'login': login, 'senha': senha}),
-          )
-          .timeout(const Duration(seconds: 10)); // ← adiciona isso
-
-      print('>>> status: ${res.statusCode}');
-      print('>>> body: ${res.body}');
-
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        final user = UserModel.fromJson(jsonDecode(res.body));
-        await _storeUser(user);
-        return user;
-      }
-      if (res.statusCode == 401) throw Exception('Login ou senha inválidos.');
-      throw Exception('Erro ao conectar ao servidor. (${res.statusCode})');
-    } catch (e) {
-      print('>>> exception no login: $e');
-      rethrow;
-    }
-  }
-
-  Future<UserModel> cadastrarUsuario(CadastroUsuarioDto dto) async {
-    final res = await http.post(
-      Uri.parse('$_base/api/usuarios'),
-      headers: _headers,
-      body: jsonEncode(dto.toJson()),
-    );
+    final res = await _api.post('/api/login', {'login': login, 'senha': senha});
 
     if (res.statusCode == 200 || res.statusCode == 201) {
-      return UserModel.fromJson(jsonDecode(res.body));
+      final user = UserModel.fromJson(jsonDecode(res.body));
+      await _storeUser(user);
+      return user;
     }
 
-    _throwFromResponse(res);
+    if (res.statusCode == 401) throw Exception('Login ou senha inválidos.');
+    _api.throwFromResponse(res);
   }
 
-  Future<UserModel> cadastrarProfissional(CadastroProfissionalDto dto) async {
-    final res = await http.post(
-      Uri.parse('$_base/api/profissionais'),
-      headers: _headers,
-      body: jsonEncode(dto.toJson()),
-    );
+  // ── Cadastro ──────────────────────────────────────────────────────────────
 
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      return UserModel.fromJson(jsonDecode(res.body));
+  Future<void> cadastrarUsuario(CadastroUsuarioDto dto) async {
+    final endpoint =
+        dto.role == 'PROFISSIONAL' ? '/api/profissionais' : '/api/usuarios';
+
+    final res = await _api.post(endpoint, dto.toJson());
+
+    if (res.statusCode == 200 || res.statusCode == 201) return;
+
+    _api.throwFromResponse(res);
+  }
+
+  Future<void> cadastrarProfissional(CadastroProfissionalDto dto) async {
+    final res = await _api.post('/api/profissionais', dto.toJson());
+
+    if (res.statusCode == 200 || res.statusCode == 201) return;
+
+    _api.throwFromResponse(res);
+  }
+
+  // ── Validação ─────────────────────────────────────────────────────────────
+
+  Future<void> validarCpf(String cpfLimpo) async {
+    final resValida = await _api.post('/api/validar/cpf', {'cpf': cpfLimpo});
+    if (resValida.statusCode == 200) {
+      final body = jsonDecode(resValida.body) as Map<String, dynamic>;
+      if (body['valido'] == false) throw Exception('CPF inválido.');
     }
 
-    _throwFromResponse(res);
+    final resExiste = await _api.get('/api/validar/cpf-existe/$cpfLimpo');
+    if (resExiste.statusCode == 200) {
+      final body = jsonDecode(resExiste.body) as Map<String, dynamic>;
+      if (body['existe'] == true) throw Exception('CPF já cadastrado.');
+    }
   }
+
+  // ── Storage ───────────────────────────────────────────────────────────────
 
   Future<void> _storeUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
@@ -106,18 +89,5 @@ class AuthRepository {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
-  }
-
-  bool get isAuthenticated => false;
-
-  Never _throwFromResponse(http.Response res) {
-    try {
-      final body = jsonDecode(res.body);
-      final msg = body['message'] ?? body['erro'] ?? body['error'];
-      if (msg != null) throw Exception(msg.toString());
-    } catch (e) {
-      if (e is Exception) rethrow;
-    }
-    throw Exception('Erro ${res.statusCode}: ${res.reasonPhrase}');
   }
 }

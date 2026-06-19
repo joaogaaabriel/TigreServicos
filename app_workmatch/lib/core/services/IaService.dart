@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AiService {
-  static const String apiKey = '';
+  static const String apiKey = String.fromEnvironment('GROQ_API_KEY');
   static const String url = 'https://api.groq.com/openai/v1/chat/completions';
 
   static const String systemPrompt = '''

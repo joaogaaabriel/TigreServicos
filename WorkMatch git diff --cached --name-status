@@ -1,0 +1,35 @@
+R100	.gitignore	app_workmatch/.env.example
+R100	.gitattributes	app_workmatch/.gitattributes
+R100	REMOVED	app_workmatch/REMOVED
+M	app_workmatch/lib/AppDependencies.dart
+M	app_workmatch/lib/AppRouter.dart
+M	app_workmatch/lib/AppView.dart
+M	app_workmatch/lib/SplashScreen.dart
+M	app_workmatch/lib/WorkServicosApp.dart
+D	app_workmatch/lib/auth/network/ApiClient.dart
+D	app_workmatch/lib/config/AppConfig.dart
+A	app_workmatch/lib/core/config/AppConfig.dart
+R100	app_workmatch/lib/auth/mixins/UiFeedbackMixin.dart	app_workmatch/lib/core/mixins/UiFeedbackMixin.dart
+R100	app_workmatch/lib/auth/mixins/ValidatorMixin.dart	app_workmatch/lib/core/mixins/ValidatorMixin.dart
+A	app_workmatch/lib/core/network/ApiClient.dart
+R100	app_workmatch/lib/services/ApiService.dart	app_workmatch/lib/core/services/ApiService.dart
+R100	app_workmatch/lib/services/DatabaseHelper.dart	app_workmatch/lib/core/services/DatabaseHelper.dart
+R095	app_workmatch/lib/services/IaService.dart	app_workmatch/lib/core/services/IaService.dart
+R100	app_workmatch/lib/services/OfflineSync.dart	app_workmatch/lib/core/services/OfflineSync.dart
+A	app_workmatch/lib/core/services/ServicoService.dart
+R100	app_workmatch/lib/services/ServicoTab.dart	app_workmatch/lib/core/services/ServicoTab.dart
+R100	app_workmatch/lib/services/StorageService.dart	app_workmatch/lib/core/services/StorageService.dart
+R100	app_workmatch/lib/services/UserLocalDataSource.dart	app_workmatch/lib/core/services/UserLocalDataSource.dart
+R100	app_workmatch/lib/theme/AppColors.dart	app_workmatch/lib/core/theme/AppColors.dart
+R100	app_workmatch/lib/theme/AppTheme.dart	app_workmatch/lib/core/theme/AppTheme.dart
+A	app_workmatch/lib/dto/CadastroProfissionalDto.dart
+M	app_workmatch/lib/dto/CadastroUsuarioDto.dart
+M	app_workmatch/lib/main.dart
+M	app_workmatch/lib/repository/AuthRepository.dart
+M	app_workmatch/lib/screens/AuthScreen.dart
+M	app_workmatch/lib/screens/HomeClienteScreen.dart
+M	app_workmatch/lib/screens/MeusServicosScreen.dart
+M	app_workmatch/lib/screens/NovoServicoScreen.dart
+D	app_workmatch/lib/services/ServicoService.dart
+M	app_workmatch/lib/shared/CustomButton.dart
+M	app_workmatch/pubspec.yaml

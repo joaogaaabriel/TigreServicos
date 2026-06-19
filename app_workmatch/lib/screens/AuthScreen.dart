@@ -1,11 +1,11 @@
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/repository/AuthRepository.dart';
-import 'package:app_workmatch/auth/mixins/UiFeedbackMixin.dart';
-import 'package:app_workmatch/auth/mixins/ValidatorMixin.dart';
+import 'package:app_workmatch/core/mixins/UiFeedbackMixin.dart';
+import 'package:app_workmatch/core/mixins/ValidatorMixin.dart';
 import 'package:app_workmatch/shared/CustomButton.dart';
 import 'package:app_workmatch/shared/CustomTextField.dart';
 import 'package:app_workmatch/shared/SectionCard.dart';
-import 'package:app_workmatch/theme/AppColors.dart';
+import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:app_workmatch/auth/AuthController.dart';
 import 'package:flutter/material.dart';
 
