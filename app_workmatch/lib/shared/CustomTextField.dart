@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/services/text_formatter.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -12,7 +12,7 @@ class CustomTextField extends StatefulWidget {
     this.obscureText = false,
     this.maxLines = 1,
     this.autofocus = false,
-    required List<TextInputFormatter> inputFormatters,
+    this.inputFormatters = const [],
   });
 
   final TextEditingController controller;
@@ -23,6 +23,8 @@ class CustomTextField extends StatefulWidget {
   final bool obscureText;
   final int maxLines;
   final bool autofocus;
+
+  final List<TextInputFormatter> inputFormatters;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -44,6 +46,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       obscureText: effectiveObscure,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       autofocus: widget.autofocus,
+      inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,

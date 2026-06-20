@@ -35,6 +35,8 @@ class AuthRepository {
   // ── Cadastro ──────────────────────────────────────────────────────────────
 
   Future<void> cadastrarUsuario(CadastroUsuarioDto dto) async {
+    print('ENVIANDO PARA API:');
+    print(dto.toJson());
     final endpoint =
         dto.role == 'PROFISSIONAL' ? '/api/profissionais' : '/api/usuarios';
 

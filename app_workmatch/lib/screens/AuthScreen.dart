@@ -245,6 +245,12 @@ class _AuthScreenState extends State<AuthScreen>
     try {
       // ── Converte DD/MM/AAAA → AAAA-MM-DD (formato que o backend espera)
       final dataNasc = _parseDateToIso(_dataNascC.text);
+      print('Data digitada: ${_dataNascC.text}');
+      print('Data convertida: $dataNasc');
+
+      print('===== CADASTRO PROFISSIONAL =====');
+      print('Data digitada: ${_dataNascC.text}');
+      print('Data convertida: $dataNasc');
 
       if (_isProfissional) {
         await widget.authRepository.cadastrarProfissional(
