@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/services/text_formatter.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -11,6 +12,7 @@ class CustomTextField extends StatefulWidget {
     this.obscureText = false,
     this.maxLines = 1,
     this.autofocus = false,
+    required List<TextInputFormatter> inputFormatters,
   });
 
   final TextEditingController controller;

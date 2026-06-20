@@ -5,6 +5,7 @@ import 'package:app_workmatch/dto/CadastroUsuarioDto.dart'
 import 'package:app_workmatch/dto/CadastroProfissionalDto.dart'
     hide CadastroProfissionalDto;
 import 'package:app_workmatch/model/UserModel.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
@@ -66,6 +67,21 @@ class AuthRepository {
       final body = jsonDecode(resExiste.body) as Map<String, dynamic>;
       if (body['existe'] == true) throw Exception('CPF já cadastrado.');
     }
+  }
+
+  // ── CEP (ViaCEP — externo, não passa pelo gateway) ───────────────────────
+
+  Future<Map<String, dynamic>> buscarCep(String cepLimpo) async {
+    final res = await http
+        .get(
+          Uri.parse('https://viacep.com.br/ws/$cepLimpo/json/'),
+        )
+        .timeout(const Duration(seconds: 8));
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Erro ao buscar CEP.');
   }
 
   // ── Storage ───────────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import 'package:app_workmatch/dio/ErrorHandler.dart';
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/repository/AuthRepository.dart';
 import 'package:app_workmatch/core/mixins/UiFeedbackMixin.dart';
@@ -8,6 +9,7 @@ import 'package:app_workmatch/shared/SectionCard.dart';
 import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:app_workmatch/auth/AuthController.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ← DateInputFormatter
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -43,6 +45,38 @@ const _estados = [
 
 const _stepLabels = ['', 'Dados pessoais', 'Endereço', 'Acesso'];
 
+// ── Formatter de data ─────────────────────────────────────────────────────────
+// Formata automaticamente: 11032003 → 11/03/2003
+// Equivalente ao fmtData() do React
+
+class _DateInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final limited = digits.length > 8 ? digits.substring(0, 8) : digits;
+
+    String formatted;
+    if (limited.length <= 2) {
+      formatted = limited;
+    } else if (limited.length <= 4) {
+      formatted = '${limited.substring(0, 2)}/${limited.substring(2)}';
+    } else {
+      formatted =
+          '${limited.substring(0, 2)}/${limited.substring(2, 4)}/${limited.substring(4)}';
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
     super.key,
@@ -59,7 +93,6 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen>
     with UiFeedbackMixin, ValidatorMixin {
-  // Controlador de login simples
   final _loginController = TextEditingController();
   final _senhaController = TextEditingController();
   late final AuthController _controller;
@@ -70,7 +103,6 @@ class _AuthScreenState extends State<AuthScreen>
   int _step = 0;
   String? _perfil;
 
-  // Campos do formulário de cadastro
   final _nomeC = TextEditingController();
   final _cpfC = TextEditingController();
   final _telefoneC = TextEditingController();
@@ -117,18 +149,10 @@ class _AuthScreenState extends State<AuthScreen>
     super.dispose();
   }
 
+  // ignore: unused_element
   Future<void> _submitLogin() async {
     final login = _loginController.text.trim();
     final senha = _senhaController.text;
-
-    if (login.isEmpty) {
-      showMessage('Informe o login');
-      return;
-    }
-    if (senha.isEmpty) {
-      showMessage('Informe a senha');
-      return;
-    }
 
     setState(() => _isLoading = true);
     try {
@@ -139,7 +163,9 @@ class _AuthScreenState extends State<AuthScreen>
       if (!mounted) return;
       await widget.onAuthenticated(user);
     } catch (e) {
-      showMessage(e.toString().replaceFirst('Exception: ', ''));
+      showMessage(
+        ErrorHandler.parse(e),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -167,6 +193,11 @@ class _AuthScreenState extends State<AuthScreen>
     }
     if (_dataNascC.text.isEmpty) {
       showMessage('Data de nascimento obrigatória');
+      return;
+    }
+    // Valida que a data está completa (DD/MM/AAAA = 10 chars)
+    if (_dataNascC.text.length < 10) {
+      showMessage('Data de nascimento incompleta');
       return;
     }
     setState(() => _step = 2);
@@ -200,8 +231,6 @@ class _AuthScreenState extends State<AuthScreen>
     setState(() => _step = 3);
   }
 
-  // ── Cadastro — POST /api/usuarios ou /api/profissionais ─────────────────
-
   Future<void> _submitCadastro() async {
     if (_loginCadC.text.trim().length < 4) {
       showMessage('Login mínimo de 4 caracteres');
@@ -211,8 +240,10 @@ class _AuthScreenState extends State<AuthScreen>
       showMessage('Senha mínimo de 6 caracteres');
       return;
     }
+
     setState(() => _isLoading = true);
     try {
+      // ── Converte DD/MM/AAAA → AAAA-MM-DD (formato que o backend espera)
       final dataNasc = _parseDateToIso(_dataNascC.text);
 
       if (_isProfissional) {
@@ -260,29 +291,37 @@ class _AuthScreenState extends State<AuthScreen>
       if (!mounted) return;
       showMessage('Cadastro realizado com sucesso!');
       setState(() {
-        setState(() => _isRegisterMode = !_isRegisterMode);
+        _isRegisterMode = false;
         _loginController.text = _loginCadC.text;
         _step = 0;
         _perfil = null;
       });
     } catch (e) {
-      showMessage(e.toString().replaceFirst('Exception: ', ''));
+      showMessage(
+        ErrorHandler.parse(e),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  /// Converte DD/MM/AAAA ou YYYY-MM-DD para YYYY-MM-DD
-  String _parseDateToIso(String input) {
-    final parts = input.split('/');
-    if (parts.length == 3 && parts[0].length == 2) {
-      return '${parts[2]}-${parts[1]}-${parts[0]}';
-    }
-    return input; // já está no formato ISO
+  /// Converte DD/MM/AAAA → AAAA-MM-DD (formato LocalDate do Spring)
+  /// Também aceita AAAA-MM-DD (já no formato correto) e DDMMAAAA (sem separadores).
+  static String _parseDateToIso(String input) {
+    final s = input.trim();
+    // Já está no formato ISO
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(s)) return s;
+    // DD/MM/AAAA ou DD-MM-AAAA
+    final m1 = RegExp(r'^(\d{2})[/\-](\d{2})[/\-](\d{4})$').firstMatch(s);
+    if (m1 != null) return '${m1.group(3)}-${m1.group(2)}-${m1.group(1)}';
+    // DDMMAAAA (sem separadores — fallback)
+    final m2 = RegExp(r'^(\d{2})(\d{2})(\d{4})$').firstMatch(s);
+    if (m2 != null) return '${m2.group(3)}-${m2.group(2)}-${m2.group(1)}';
+    return s;
   }
 
   void _goToMode(bool register) => setState(() {
-        setState(() => _isRegisterMode = !_isRegisterMode);
+        _isRegisterMode = register;
         _step = 0;
         _perfil = null;
       });
@@ -307,8 +346,6 @@ class _AuthScreenState extends State<AuthScreen>
       ),
     );
   }
-
-  // ── Cabeçalho comum ───────────────────────────────────────────────────────
 
   Widget _buildHeader({required String subtitle}) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,12 +396,14 @@ class _AuthScreenState extends State<AuthScreen>
           CustomTextField(
             controller: _loginController,
             label: 'Login',
+            inputFormatters: [],
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _senhaController,
             label: 'Senha',
             obscureText: true,
+            inputFormatters: [],
           ),
           const SizedBox(height: 24),
           CustomButton(
@@ -372,10 +411,8 @@ class _AuthScreenState extends State<AuthScreen>
             onPressed: _isLoading
                 ? null
                 : () async {
-                    print('>>> DIRETO NO BOTÃO');
                     final login = _loginController.text.trim();
                     final senha = _senhaController.text;
-                    print('>>> login=$login senha=$senha');
                     if (login.isEmpty || senha.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Preencha os campos')),
@@ -384,17 +421,16 @@ class _AuthScreenState extends State<AuthScreen>
                     }
                     setState(() => _isLoading = true);
                     try {
-                      final user = await widget.authRepository.login(
-                        login: login,
-                        senha: senha,
-                      );
-                      print('>>> user: ${user.toJson()}');
+                      final user = await widget.authRepository
+                          .login(login: login, senha: senha);
                       if (!mounted) return;
                       await widget.onAuthenticated(user);
                     } catch (e) {
-                      print('>>> erro: $e');
+                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
+                        SnackBar(
+                            content: Text(
+                                e.toString().replaceFirst('Exception: ', ''))),
                       );
                     } finally {
                       if (mounted) setState(() => _isLoading = false);
@@ -411,8 +447,6 @@ class _AuthScreenState extends State<AuthScreen>
           ),
         ],
       );
-
-  // ── Cadastro ──────────────────────────────────────────────────────────────
 
   Widget _buildCadastro() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,8 +474,6 @@ class _AuthScreenState extends State<AuthScreen>
           ),
         ],
       );
-
-  // ── Passo 0: Escolher perfil ──────────────────────────────────────────────
 
   Widget _buildEscolhaPerfil() => Column(
         children: [
@@ -471,73 +503,96 @@ class _AuthScreenState extends State<AuthScreen>
         ],
       );
 
-  // ── Passo 1: Dados pessoais ───────────────────────────────────────────────
-
   Widget _buildStep1() => Column(
         children: [
-          CustomTextField(controller: _nomeC, label: 'Nome completo'),
+          CustomTextField(
+            controller: _nomeC,
+            label: 'Nome completo',
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           CustomTextField(
-              controller: _cpfC,
-              label: 'CPF',
-              hint: '000.000.000-00',
-              keyboardType: TextInputType.number),
+            controller: _cpfC,
+            label: 'CPF',
+            hint: '000.000.000-00',
+            keyboardType: TextInputType.number,
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           CustomTextField(
-              controller: _telefoneC,
-              label: 'Telefone',
-              hint: '(00) 00000-0000',
-              keyboardType: TextInputType.phone),
+            controller: _telefoneC,
+            label: 'Telefone',
+            hint: '(00) 00000-0000',
+            keyboardType: TextInputType.phone,
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
+          // ── Campo de data com formatter automático ──────────────────────
+          // _DateInputFormatter formata enquanto digita: 11032003 → 11/03/2003
+          // _parseDateToIso converte na hora de enviar: 11/03/2003 → 2003-03-11
           CustomTextField(
-              controller: _dataNascC,
-              label: 'Data de nascimento',
-              hint: 'DD/MM/AAAA',
-              keyboardType: TextInputType.datetime),
+            controller: _dataNascC,
+            label: 'Data de nascimento',
+            hint: 'DD/MM/AAAA',
+            keyboardType: TextInputType.number,
+            inputFormatters: [_DateInputFormatter()],
+          ),
           const SizedBox(height: 20),
           CustomButton(label: 'Próximo', onPressed: _nextStep1),
         ],
       );
 
-  // ── Passo 2: Endereço ─────────────────────────────────────────────────────
-
   Widget _buildStep2() => Column(
         children: [
           CustomTextField(
-              controller: _emailC,
-              label: 'E-mail',
-              keyboardType: TextInputType.emailAddress),
+            controller: _emailC,
+            label: 'E-mail',
+            keyboardType: TextInputType.emailAddress,
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           CustomTextField(
-              controller: _cepC,
-              label: 'CEP',
-              hint: '00000-000',
-              keyboardType: TextInputType.number),
+            controller: _cepC,
+            label: 'CEP',
+            hint: '00000-000',
+            keyboardType: TextInputType.number,
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           CustomTextField(
-              controller: _enderecoC,
-              label: 'Endereço',
-              hint: 'Rua, Avenida...'),
+            controller: _enderecoC,
+            label: 'Endereço',
+            hint: 'Rua, Avenida...',
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
                 child: CustomTextField(
-                    controller: _numeroC,
-                    label: 'Número',
-                    hint: 'Ex.: 123',
-                    keyboardType: TextInputType.number)),
+              controller: _numeroC,
+              label: 'Número',
+              hint: 'Ex.: 123',
+              keyboardType: TextInputType.number,
+              inputFormatters: [],
+            )),
             const SizedBox(width: 10),
             Expanded(
                 child: CustomTextField(
-                    controller: _complementoC,
-                    label: 'Complemento',
-                    hint: 'Apto, Sala...')),
+              controller: _complementoC,
+              label: 'Complemento',
+              hint: 'Apto, Sala...',
+              inputFormatters: [],
+            )),
           ]),
           const SizedBox(height: 12),
-          CustomTextField(controller: _cidadeC, label: 'Cidade'),
+          CustomTextField(
+            controller: _cidadeC,
+            label: 'Cidade',
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            initialValue: _estadoSel,
+            value: _estadoSel,
             decoration: const InputDecoration(labelText: 'Estado'),
             items: _estados
                 .map((uf) => DropdownMenuItem(value: uf, child: Text(uf)))
@@ -547,21 +602,27 @@ class _AuthScreenState extends State<AuthScreen>
           if (_isProfissional) ...[
             const SizedBox(height: 12),
             CustomTextField(
-                controller: _especialidadeC,
-                label: 'Especialidade',
-                hint: 'Ex.: Eletricista'),
+              controller: _especialidadeC,
+              label: 'Especialidade',
+              hint: 'Ex.: Eletricista',
+              inputFormatters: [],
+            ),
             const SizedBox(height: 12),
             CustomTextField(
-                controller: _descricaoC,
-                label: 'Descrição',
-                hint: 'Descreva sua experiência...',
-                maxLines: 3),
+              controller: _descricaoC,
+              label: 'Descrição',
+              hint: 'Descreva sua experiência...',
+              maxLines: 3,
+              inputFormatters: [],
+            ),
             const SizedBox(height: 12),
             CustomTextField(
-                controller: _expAnosC,
-                label: 'Anos de experiência',
-                hint: 'Ex.: 5',
-                keyboardType: TextInputType.number),
+              controller: _expAnosC,
+              label: 'Anos de experiência',
+              hint: 'Ex.: 5',
+              keyboardType: TextInputType.number,
+              inputFormatters: [],
+            ),
           ],
           const SizedBox(height: 20),
           Row(children: [
@@ -574,20 +635,22 @@ class _AuthScreenState extends State<AuthScreen>
         ],
       );
 
-  // ── Passo 3: Acesso ───────────────────────────────────────────────────────
-
   Widget _buildStep3() => Column(
         children: [
           CustomTextField(
-              controller: _loginCadC,
-              label: 'Login',
-              hint: 'Mínimo 4 caracteres'),
+            controller: _loginCadC,
+            label: 'Login',
+            hint: 'Mínimo 4 caracteres',
+            inputFormatters: [],
+          ),
           const SizedBox(height: 12),
           CustomTextField(
-              controller: _senhaCadC,
-              label: 'Senha',
-              hint: 'Mínimo 6 caracteres',
-              obscureText: true),
+            controller: _senhaCadC,
+            label: 'Senha',
+            hint: 'Mínimo 6 caracteres',
+            obscureText: true,
+            inputFormatters: [],
+          ),
           const SizedBox(height: 20),
           Row(children: [
             Expanded(
@@ -601,8 +664,6 @@ class _AuthScreenState extends State<AuthScreen>
           ]),
         ],
       );
-
-  // ── Helper: botão outline ─────────────────────────────────────────────────
 
   Widget _outlineBtn(String label, VoidCallback onPressed) => SizedBox(
         height: 54,

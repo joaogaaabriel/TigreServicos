@@ -1,4 +1,3 @@
-import 'package:app_workmatch/core/network/ApiClient.dart';
 import 'package:app_workmatch/core/theme/AppTheme.dart';
 import 'package:flutter/material.dart';
 
@@ -44,7 +43,6 @@ class _WorkServicosAppState extends State<WorkServicosApp> {
           home: AppView(
             controller: _controller,
             dependencies: widget.dependencies,
-            apiClient: ApiClient(),
           ),
         );
       },

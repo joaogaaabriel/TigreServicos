@@ -1,6 +1,4 @@
 import 'package:app_workmatch/AppDependencies.dart';
-import 'package:app_workmatch/core/network/ApiClient.dart';
-import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/screens/AuthScreen.dart';
 import 'package:app_workmatch/screens/HomeClienteScreen.dart';
@@ -10,12 +8,9 @@ import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter extends StatefulWidget {
-  const AppRouter(
-      {super.key, required this.dependencies, required ApiClient apiClient})
-      : _apiClient = apiClient;
+  const AppRouter({super.key, required this.dependencies});
 
   final AppDependencies dependencies;
-  final ApiClient _apiClient;
 
   @override
   State<AppRouter> createState() => _AppRouterState();
@@ -26,8 +21,6 @@ class _AppRouterState extends State<AppRouter> {
   bool _checking = true;
 
   AppDependencies get _deps => widget.dependencies;
-
-  ApiClient get apiClient => apiClient;
 
   @override
   void initState() {
@@ -108,9 +101,7 @@ class _AppRouterState extends State<AppRouter> {
         // TODO
       },
       onLogout: _onLogout,
-      servicoService: ServicoService(
-        apiClient: widget._apiClient,
-      ),
+      servicoService: _deps.servicoService,
     );
   }
 }

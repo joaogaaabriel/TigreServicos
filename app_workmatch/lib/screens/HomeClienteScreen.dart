@@ -136,7 +136,14 @@ class HomeClienteScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
-            onPressed: () async => onLogout?.call(),
+            onPressed: onLogout == null
+                ? null
+                : () async {
+                    await onLogout!();
+                    if (context.mounted) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
+                  },
           ),
         ],
       ),

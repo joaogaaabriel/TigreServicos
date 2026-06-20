@@ -4,11 +4,6 @@ import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/model/UserModel.dart';
 import 'ChatServicoScreen.dart';
 
-/// CandidatosServicoScreen — equivalente Flutter de CandidatosServico.jsx
-/// Lógica preservada:
-///  - carregar() → GET /api/candidaturas/servico/{servicoId}
-///  - contratar() → PATCH /api/servicos/{id}/avancar → navega para ChatServico
-///  - abrirChat() → navega direto para ChatServico (sem contratar)
 class CandidatosServicoScreen extends StatefulWidget {
   const CandidatosServicoScreen({
     super.key,

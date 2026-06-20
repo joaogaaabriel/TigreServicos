@@ -43,19 +43,9 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    final confirmed = await _shouldLogout();
-    if (!confirmed) return;
-    final user = await _authRepository.getStoredUser();
-
-    if (user != null) {
-      _currentUser = user;
-      _status = AppStatus.authenticated;
-    } else {
-      _status = AppStatus.unauthenticated;
-    }
-    notifyListeners();
+    await _authRepository.logout(); // remove do SharedPreferences
+    _currentUser = null;
+    _status = AppStatus.unauthenticated;
+    notifyListeners(); // AppView detecta e exibe AuthScreen
   }
-
-  // Guarda o context globalmente para o dialog de confirmação
-  Future<bool> _shouldLogout() async => true; // confirmação feita na UI
 }
