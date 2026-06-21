@@ -35,8 +35,6 @@ class AuthRepository {
   // ── Cadastro ──────────────────────────────────────────────────────────────
 
   Future<void> cadastrarUsuario(CadastroUsuarioDto dto) async {
-    print('ENVIANDO PARA API:');
-    print(dto.toJson());
     final endpoint =
         dto.role == 'PROFISSIONAL' ? '/api/profissionais' : '/api/usuarios';
 
@@ -48,7 +46,33 @@ class AuthRepository {
   }
 
   Future<void> cadastrarProfissional(CadastroProfissionalDto dto) async {
-    final res = await _api.post('/api/profissionais', dto.toJson());
+    // Monta payload aqui — garante role independente do toJson() do DTO
+    final enderecoCompleto = [dto.endereco, dto.numero, dto.complemento]
+        .where((s) => s.isNotEmpty)
+        .join(', ');
+
+    final payload = {
+      'nome': dto.nome,
+      'cpf': dto.cpf.replaceAll(RegExp(r'\D'), ''),
+      'telefone': dto.telefone.replaceAll(RegExp(r'\D'), ''),
+      'email': dto.email,
+      'dataNascimento': dto.dataNascimento,
+      'endereco': enderecoCompleto,
+      'cidade': dto.cidade,
+      'estado': dto.estado,
+      'login': dto.login,
+      'senha': dto.senha,
+      'role': 'PROFISSIONAL',
+      'especialidade': dto.especialidade,
+      'descricao': dto.descricao,
+      'experienciaAnos': dto.experienciaAnos,
+    };
+
+    print('>>> PAYLOAD PROFISSIONAL: ${jsonEncode(payload)}');
+    final res = await _api.post('/api/profissionais', payload);
+
+    print('>>> STATUS: ${res.statusCode}');
+    print('>>> BODY: ${res.body}');
 
     if (res.statusCode == 200 || res.statusCode == 201) return;
 

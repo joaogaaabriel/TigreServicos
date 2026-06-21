@@ -142,6 +142,7 @@ class CadastroProfissionalDto {
   final int experienciaAnos;
   final String login;
   final String senha;
+  final String role;
 
   const CadastroProfissionalDto({
     required this.nome,
@@ -160,6 +161,7 @@ class CadastroProfissionalDto {
     required this.experienciaAnos,
     required this.login,
     required this.senha,
+    this.role = 'PROFISSIONAL',
   });
 
   Map<String, dynamic> toJson() => {

@@ -386,10 +386,26 @@ class _ServicoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = servico['status']?.toString() ?? '';
     final id = servico['id']?.toString() ?? '';
+    final profId = servico['profissionalId']?.toString();
+
+    // Pode candidatar: serviço publicado e ainda não se candidatou
     final podeCandidatar = status == 'PUBLICADO' && !jaCandidatou;
+
+    // Aguardando: já se candidatou mas serviço ainda publicado
+    final aguardando = jaCandidatou && status == 'PUBLICADO';
+
+    // Pode chat: status avançou E este profissional foi o escolhido
+    final foiEscolhido = profId == userId;
     final podeChat =
         ['NEGOCIANDO', 'CONTRATADO', 'ANDAMENTO'].contains(status) &&
-            servico['profissionalId']?.toString() == userId;
+            foiEscolhido;
+
+    // Perdeu: status avançou mas outro profissional foi escolhido
+    final perdeu = ['NEGOCIANDO', 'CONTRATADO', 'ANDAMENTO', 'FINALIZADO']
+            .contains(status) &&
+        jaCandidatou &&
+        !foiEscolhido;
+
     final cor = _statusColor(status);
     final descricao = servico['descricao']?.toString() ?? '';
 
@@ -431,7 +447,7 @@ class _ServicoCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Meta: especialidade + cidade
+            // Meta
             Wrap(
               spacing: 12,
               children: [
@@ -448,7 +464,6 @@ class _ServicoCard extends StatelessWidget {
                       ].join(' — ')),
               ],
             ),
-            // Descrição truncada
             if (descricao.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
@@ -460,9 +475,10 @@ class _ServicoCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 12),
-            // Ações
+            // ── Ações ──────────────────────────────────────────────────────
             Row(
               children: [
+                // 1. Botão candidatar
                 if (podeCandidatar)
                   FilledButton(
                     onPressed: emEnvio ? null : onCandidatar,
@@ -479,23 +495,30 @@ class _ServicoCard extends StatelessWidget {
                         : const Text('Candidatar-se',
                             style: TextStyle(fontSize: 13)),
                   ),
-                if (jaCandidatou && status == 'PUBLICADO')
+
+                // 2. Aguardando resposta do cliente
+                if (aguardando)
                   Row(
                     children: const [
-                      Icon(Icons.check_circle_outline,
-                          size: 16, color: AppColors.success),
+                      Icon(Icons.schedule, size: 15, color: AppColors.warning),
                       SizedBox(width: 4),
-                      Text('Candidatura enviada',
+                      Text('Aguardando resposta',
                           style: TextStyle(
-                              fontSize: 13, color: AppColors.textMid)),
+                              fontSize: 13,
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
+
+                // 3. Botão Negociar / Chat — foi escolhido
                 if (podeChat) ...[
-                  const SizedBox(width: 8),
                   OutlinedButton.icon(
                     onPressed: () => onChat(id),
                     icon: const Icon(Icons.chat_bubble_outline, size: 14),
-                    label: const Text('Chat', style: TextStyle(fontSize: 13)),
+                    label: Text(
+                      status == 'NEGOCIANDO' ? 'Negociar' : 'Chat',
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.navy,
                       side: const BorderSide(color: AppColors.navy),
@@ -504,6 +527,19 @@ class _ServicoCard extends StatelessWidget {
                     ),
                   ),
                 ],
+
+                // 4. Não selecionado
+                if (perdeu)
+                  Row(
+                    children: const [
+                      Icon(Icons.cancel_outlined,
+                          size: 15, color: AppColors.textLight),
+                      SizedBox(width: 4),
+                      Text('Outro profissional selecionado',
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textLight)),
+                    ],
+                  ),
               ],
             ),
           ],

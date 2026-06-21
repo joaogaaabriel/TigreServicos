@@ -40,10 +40,27 @@ class ApiClient {
 
   /// Lança Exception com a mensagem do backend ou status HTTP.
   Never throwFromResponse(http.Response res) {
+    // Print do body completo para debug
+    print('===== RESPONSE ERROR [${res.statusCode}] =====');
+    print(res.body);
+    print('=============================================');
     try {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
+
+      // Mensagem direta
       final msg = body['message'] ?? body['erro'] ?? body['error'];
       if (msg != null) throw Exception(msg.toString());
+
+      // Erros de validação do Spring (@Valid) — lista de campos
+      final errors = body['errors'] as List<dynamic>?;
+      if (errors != null && errors.isNotEmpty) {
+        final msgs = errors
+            .map(
+                (e) => (e as Map<String, dynamic>)['message']?.toString() ?? '')
+            .where((s) => s.isNotEmpty)
+            .join(', ');
+        if (msgs.isNotEmpty) throw Exception(msgs);
+      }
     } catch (e) {
       if (e is Exception) rethrow;
     }
