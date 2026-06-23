@@ -1,6 +1,8 @@
 import 'package:app_workmatch/core/services/ServicoService.dart';
 import 'package:app_workmatch/core/theme/AppColors.dart';
+import 'package:app_workmatch/material/MenuLateral.dart';
 import 'package:app_workmatch/model/UserModel.dart';
+import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:flutter/material.dart';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -52,11 +54,15 @@ class HomeProfissionalScreen extends StatefulWidget {
     required this.user,
     required this.servicoService,
     required this.onLogout,
+    this.itemAtivo = 0,
+    this.onNavegar,
   });
 
   final UserModel user;
   final ServicoService servicoService;
   final Future<void> Function() onLogout;
+  final int itemAtivo;
+  final void Function(int)? onNavegar;
 
   @override
   State<HomeProfissionalScreen> createState() => _HomeProfissionalScreenState();
@@ -170,10 +176,33 @@ class _HomeProfissionalScreenState extends State<HomeProfissionalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: MenuLateral(
+        user: widget.user,
+        itemAtivo: widget.itemAtivo,
+        onNavegar: (index) {
+          if (index == 1) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => MeusServicosScreen(
+                user: widget.user,
+                servicoService: widget.servicoService,
+              ),
+            ));
+          }
+          widget.onNavegar?.call(index);
+        },
+        onLogout: widget.onLogout,
+      ),
       appBar: AppBar(
         backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: RichText(
           text: const TextSpan(
             style: TextStyle(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:app_workmatch/core/theme/AppColors.dart';
 import 'package:flutter/material.dart';
 import 'package:app_workmatch/core/services/ServicoService.dart';
@@ -10,13 +11,15 @@ class ChatServicoScreen extends StatefulWidget {
     required this.servicoId,
     required this.user,
     required this.servicoService,
-    this.profissionalId, // opcional — passado por CandidatosServico
+    this.profissionalId,
+    this.clienteId, // opcional — passado por CandidatosServico
   });
 
   final String servicoId;
   final UserModel user;
   final ServicoService servicoService;
   final String? profissionalId;
+  final String? clienteId;
 
   @override
   State<ChatServicoScreen> createState() => _ChatServicoScreenState();
@@ -77,6 +80,7 @@ class _ChatServicoScreenState extends State<ChatServicoScreen> {
           _mensagens =
               List<Map<String, dynamic>>.from(results[1] as List? ?? []);
         });
+        debugPrint('SERVICO CARREGADO: ${jsonEncode(_servico)}');
         _scrollToBottom();
       }
     } catch (_) {
@@ -99,6 +103,16 @@ class _ChatServicoScreenState extends State<ChatServicoScreen> {
   }
 
   Future<void> _handleEnviar() async {
+    final results = await Future.wait([
+      widget.servicoService.buscarServico(widget.servicoId),
+      widget.servicoService.listarMensagens(widget.servicoId),
+    ]);
+
+    _servico = results[0] as Map<String, dynamic>;
+
+    print('SERVICO: $_servico');
+    print('CLIENTE ID: ${_servico?['clienteId']}');
+
     final texto = _inputController.text.trim();
     if (texto.isEmpty || _enviando) return;
 
@@ -106,15 +120,23 @@ class _ChatServicoScreenState extends State<ChatServicoScreen> {
     setState(() => _enviando = true);
 
     try {
+      print({
+        'servicoId': widget.servicoId,
+        'remetenteId': widget.user.id,
+        'remetenteTipo': widget.user.role,
+        'destinatarioId': _servico?['clienteId'],
+        'conteudo': texto,
+      });
       await widget.servicoService.enviarMensagem(
         servicoId: widget.servicoId,
         remetenteId: widget.user.id,
         remetenteTipo: widget.user.role,
+        destinatarioId: _servico?['clienteId'],
         conteudo: texto,
       );
       await _carregarMensagens();
-    } catch (_) {
-      print(_);
+    } catch (e) {
+      debugPrint('ERRO AO ENVIAR: $e');
     } finally {
       if (mounted) setState(() => _enviando = false);
     }

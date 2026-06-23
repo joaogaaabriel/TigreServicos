@@ -1,4 +1,5 @@
 import 'package:app_workmatch/core/services/ServicoService.dart';
+import 'package:app_workmatch/material/MenuLateral.dart';
 import 'package:app_workmatch/model/UserModel.dart';
 import 'package:app_workmatch/screens/MeusServicosScreen.dart';
 import 'package:app_workmatch/screens/NovoServicoScreen.dart';
@@ -94,6 +95,8 @@ class HomeClienteScreen extends StatelessWidget {
     this.onVerServicosPorStatus,
     this.onLogout,
     required this.servicoService,
+    this.itemAtivo = 0,
+    this.onNavegar,
   });
 
   final UserModel user;
@@ -102,6 +105,8 @@ class HomeClienteScreen extends StatelessWidget {
   final void Function(String status)? onVerServicosPorStatus;
   final Future<void> Function()? onLogout;
   final ServicoService servicoService;
+  final int itemAtivo;
+  final void Function(int)? onNavegar;
 
   String get _primeiroNome {
     final partes = user.nome.trim().split(' ');
@@ -112,10 +117,33 @@ class HomeClienteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: MenuLateral(
+        user: user,
+        itemAtivo: itemAtivo,
+        onNavegar: (index) {
+          if (index == 1) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => MeusServicosScreen(
+                user: user,
+                servicoService: servicoService,
+              ),
+            ));
+          }
+          onNavegar?.call(index);
+        },
+        onLogout: onLogout ?? () async {},
+      ),
       appBar: AppBar(
         backgroundColor: AppColors.navy,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: RichText(
           text: const TextSpan(
             style: TextStyle(
@@ -136,14 +164,7 @@ class HomeClienteScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
-            onPressed: onLogout == null
-                ? null
-                : () async {
-                    await onLogout!();
-                    if (context.mounted) {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
-                  },
+            onPressed: () async => onLogout?.call(),
           ),
         ],
       ),

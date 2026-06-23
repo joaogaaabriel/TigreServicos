@@ -26,18 +26,24 @@ class ServicoService {
     _api.throwFromResponse(res);
   }
 
-  // ── Listar por cliente ────────────────────────────────────────────────────
+  Future<List<dynamic>> listarServicos(
+    String id, {
+    required String userId,
+    required bool ehProfissional,
+  }) async {
+    final endpoint = ehProfissional
+        ? '/api/servicos/profissional/$userId'
+        : '/api/servicos/cliente/$userId';
 
-  Future<List<dynamic>> listarPorCliente(String clienteId) async {
-    final res = await _api.get('/api/servicos/cliente/$clienteId');
+    final res = await _api.get(endpoint);
 
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as List<dynamic>;
     }
 
     _api.throwFromResponse(res);
+    return [];
   }
-
   // ── Listar publicados (com filtros e paginação) ───────────────────────────
 
   Future<List<dynamic>> listarPublicados({
@@ -137,25 +143,28 @@ class ServicoService {
   // ── Chat / Mensagens ──────────────────────────────────────────────────────
 
   Future<List<dynamic>> listarMensagens(String servicoId) async {
-    final res = await _api.get('/api/mensagens/$servicoId');
+    final res = await _api.get('/api/mensagens/servico/$servicoId');
 
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as List<dynamic>;
     }
 
     _api.throwFromResponse(res);
+    return [];
   }
 
   Future<void> enviarMensagem({
     required String servicoId,
     required String remetenteId,
-    required String remetenteTipo, // "CLIENTE" ou "PROFISSIONAL"
+    required String remetenteTipo,
     required String conteudo,
+    String? destinatarioId,
   }) async {
     final res = await _api.post('/api/mensagens', {
       'servicoId': servicoId,
       'remetenteId': remetenteId,
       'remetenteTipo': remetenteTipo,
+      'destinatarioId': destinatarioId,
       'conteudo': conteudo,
     });
 
